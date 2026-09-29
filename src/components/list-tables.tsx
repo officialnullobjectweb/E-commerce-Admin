@@ -335,16 +335,16 @@ export function CouponsTable({ coupons }: { coupons: Coupon[] }) {
 }
 
 export function CustomersTable({ customers }: { customers: Customer[] }) {
-  const data = customers.map((c) => ({ ...c, id: c.email }))
-  const columns: ColumnDef<(Customer & { id: string }), unknown>[] = [
+  const data = customers
+  const columns: ColumnDef<Customer, unknown>[] = [
     {
       accessorKey: "name",
       header: "Customer",
       cell: ({ row }) => (
-        <div className="min-w-0">
-          <span className="block truncate font-medium">{row.original.name || "—"}</span>
+        <Link href={`/customers/${row.original.id}`} className="block min-w-0 hover:underline">
+          <span className="block truncate font-medium">{row.original.name || row.original.email}</span>
           <span className="block truncate text-xs text-faint">{row.original.email}</span>
-        </div>
+        </Link>
       ),
     },
     {

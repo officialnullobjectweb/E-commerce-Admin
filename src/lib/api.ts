@@ -360,6 +360,36 @@ export async function saveSetting(key: SettingKey, value: unknown): Promise<void
 }
 
 /** Customers: editable records (checkout upserts; admin edits here). */
+type OrderAgg = { count: number; revenue: number }
+
+function buildOrderAgg(orders: unknown): Map<string, OrderAgg> {
+  const agg = new Map<string, OrderAgg>()
+  for (const o of (orders ?? []) as { email: string; status: string; total: number }[]) {
+    const key = o.email.toLowerCase()
+    const a = agg.get(key) ?? { count: 0, revenue: 0 }
+    a.count += 1
+    if (o.status === "paid") a.revenue += Number(o.total || 0)
+    agg.set(key, a)
+  }
+  return agg
+}
+
+function mapCustomerRow(r: Record<string, unknown>, a: OrderAgg): Customer {
+  return {
+    id: String(r.id),
+    email: String(r.email ?? ""),
+    name: String(r.name ?? ""),
+    phone: String(r.phone ?? ""),
+    tags: (r.tags ?? []) as string[],
+    notes: String(r.notes ?? ""),
+    marketingOptIn: Boolean(r.marketing_opt_in),
+    orders: a.count,
+    revenue: a.revenue,
+    lastOrderAt: r.last_order_at ? String(r.last_order_at) : null,
+    createdAt: String(r.created_at ?? ""),
+  }
+}
+
 export async function listCustomers(): Promise<Customer[]> {
   const sb = service()
   const [{ data: rows }, { data: orders }] = await Promise.all([
@@ -367,30 +397,32 @@ export async function listCustomers(): Promise<Customer[]> {
     sb.from("orders").select("email,status,total,created_at").limit(2000),
   ])
   if (rows === null) throw new Error("customers load failed")
-  const agg = new Map<string, { count: number; revenue: number }>()
-  for (const o of (orders ?? []) as unknown as { email: string; status: string; total: number }[]) {
-    const key = o.email.toLowerCase()
-    const a = agg.get(key) ?? { count: 0, revenue: 0 }
-    a.count += 1
-    if (o.status === "paid") a.revenue += Number(o.total || 0)
-    agg.set(key, a)
-  }
-  return ((rows ?? []) as unknown as Record<string, unknown>[]).map((r) => {
-    const a = agg.get(String(r.email).toLowerCase()) ?? { count: 0, revenue: 0 }
-    return {
-      id: String(r.id),
-      email: String(r.email ?? ""),
-      name: String(r.name ?? ""),
-      phone: String(r.phone ?? ""),
-      tags: (r.tags ?? []) as string[],
-      notes: String(r.notes ?? ""),
-      marketingOptIn: Boolean(r.marketing_opt_in),
-      orders: a.count,
-      revenue: a.revenue,
-      lastOrderAt: r.last_order_at ? String(r.last_order_at) : null,
-      createdAt: String(r.created_at ?? ""),
-    }
-  })
+  const agg = buildOrderAgg(orders)
+  return ((rows ?? []) as unknown as Record<string, unknown>[]).map((r) =>
+    mapCustomerRow(r, agg.get(String(r.email).toLowerCase()) ?? { count: 0, revenue: 0 })
+  )
+}
+
+export async function getCustomer(id: string): Promise<Customer | null> {
+  const sb = service()
+  const { data: row, error } = await sb.from("customers").select("*").eq("id", id).maybeSingle()
+  if (error) throw new Error(error.message)
+  if (!row) return null
+  const { data: orders } = await sb.from("orders").select("email,status,total,created_at").limit(2000)
+  const agg = buildOrderAgg(orders)
+  const r = row as Record<string, unknown>
+  return mapCustomerRow(r, agg.get(String(r.email).toLowerCase()) ?? { count: 0, revenue: 0 })
+}
+
+export async function listOrdersForCustomer(email: string): Promise<Order[]> {
+  const { data, error } = await service()
+    .from("orders")
+    .select(ORDER_COLS)
+    .eq("email", email)
+    .order("created_at", { ascending: false })
+    .range(0, 199)
+  if (error) throw new Error(error.message)
+  return ((data ?? []) as unknown as Record<string, unknown>[]).map(toOrder)
 }
 
 export async function saveCustomer(
