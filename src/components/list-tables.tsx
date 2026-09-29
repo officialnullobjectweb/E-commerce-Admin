@@ -213,17 +213,39 @@ export function ReviewsTable({ reviews }: { reviews: Review[] }) {
         <div className="min-w-0 max-w-md">
           {row.original.title && <p className="truncate font-medium">{row.original.title}</p>}
           <p className="line-clamp-2 text-xs text-faint">{row.original.body}</p>
+          {row.original.reply && (
+            <p className="mt-1 line-clamp-1 text-xs text-ok">
+              <span className="label">replied:</span> {row.original.reply}
+            </p>
+          )}
         </div>
       ),
     },
     {
-      id: "product",
+      accessorKey: "productTitle",
       header: "Product",
       cell: ({ row }) => <span className="truncate text-faint">{row.original.productTitle ?? "—"}</span>,
     },
     {
       accessorKey: "name",
       header: "By",
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => (
+        <Badge
+          tone={
+            row.original.status === "approved"
+              ? "ok"
+              : row.original.status === "pending"
+                ? "warn"
+                : "neutral"
+          }
+        >
+          {row.original.status}
+        </Badge>
+      ),
     },
     {
       accessorKey: "createdAt",
@@ -234,7 +256,7 @@ export function ReviewsTable({ reviews }: { reviews: Review[] }) {
       id: "actions",
       header: "",
       enableSorting: false,
-      cell: ({ row }) => <ReviewActions id={row.original.id} />,
+      cell: ({ row }) => <ReviewActions review={row.original} />,
     },
   ]
 
