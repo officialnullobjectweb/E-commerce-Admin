@@ -71,16 +71,88 @@ export const categoryFormSchema = z.object({
 
 export type CategoryFormValues = z.infer<typeof categoryFormSchema>
 
-export const couponFormSchema = z.object({
-  code: z
-    .string()
-    .trim()
-    .transform((s) => s.toUpperCase().replace(/[^A-Z0-9]/g, ""))
-    .pipe(z.string().min(2, "Too short").max(32, "Too long")),
-  percent: z.coerce.number().int("Whole percent").min(1, "Min 1%").max(90, "Max 90%"),
-})
+export const couponFormSchema = z
+  .object({
+    code: z
+      .string()
+      .trim()
+      .transform((s) => s.toUpperCase().replace(/[^A-Z0-9]/g, ""))
+      .pipe(z.string().min(2, "Too short").max(32, "Too long")),
+    type: z.enum(["percent", "fixed", "bogo", "free_shipping"]).default("percent"),
+    percent: z.coerce.number().int("Whole percent").min(0, "Min 0%").max(90, "Max 90%").default(0),
+    amount: z.coerce.number().int("Whole ₹").min(0, "Min ₹0").max(1_000_000).default(0),
+    active: z.boolean().default(true),
+    min_subtotal: z.coerce.number().int().min(0).max(10_000_000).default(0),
+    max_discount: z.coerce.number().int().min(0).max(1_000_000).default(0),
+    applies_to: z.enum(["all", "products", "categories"]).default("all"),
+    productsText: z.string().max(2000).default(""),
+    categoriesText: z.string().max(2000).default(""),
+    statesText: z.string().max(600).default(""),
+    startsAt: z.string().default(""),
+    endsAt: z.string().default(""),
+    max_redemptions: z.coerce.number().int().min(0).max(1_000_000).default(0),
+    per_user_limit: z.coerce.number().int().min(0).max(1000).default(0),
+    bogo_buy_qty: z.coerce.number().int().min(2).max(20).default(2),
+    bogo_get_qty: z.coerce.number().int().min(1).max(20).default(1),
+  })
+  .superRefine((v, ctx) => {
+    if (v.type === "percent" && v.percent < 1)
+      ctx.addIssue({ code: "custom", path: ["percent"], message: "Percent coupons need ≥ 1%" })
+    if (v.type === "fixed" && v.amount < 1)
+      ctx.addIssue({ code: "custom", path: ["amount"], message: "Fixed coupons need an amount" })
+    if (v.startsAt && v.endsAt && new Date(v.startsAt) >= new Date(v.endsAt))
+      ctx.addIssue({ code: "custom", path: ["endsAt"], message: "End must be after start" })
+  })
 
 export type CouponFormValues = z.infer<typeof couponFormSchema>
+
+const idList = (text: string): string[] =>
+  splitList(text).filter((s) => /^[0-9a-f-]{36}$/i.test(s))
+
+const iso = (s: string): string | null => (s ? new Date(s).toISOString() : null)
+
+export function toCouponInput(v: CouponFormValues): import("./api").CouponInput {
+  return {
+    code: v.code,
+    type: v.type,
+    percent: v.type === "percent" ? v.percent : 0,
+    amount: v.type === "fixed" ? v.amount : 0,
+    active: v.active,
+    min_subtotal: v.min_subtotal,
+    max_discount: v.max_discount,
+    applies_to: v.applies_to,
+    product_ids: v.applies_to === "products" ? idList(v.productsText) : [],
+    category_ids: v.applies_to === "categories" ? idList(v.categoriesText) : [],
+    states: splitList(v.statesText).map((s) => s.toLowerCase()),
+    starts_at: iso(v.startsAt),
+    ends_at: iso(v.endsAt),
+    max_redemptions: v.max_redemptions,
+    per_user_limit: v.per_user_limit,
+    bogo_buy_qty: v.bogo_buy_qty,
+    bogo_get_qty: v.bogo_get_qty,
+  }
+}
+
+export const orderStateSchema = z.enum(["new", "packing", "shipped", "delivered", "returned"])
+export const orderStatusSchema = z.enum(["pending", "paid", "failed", "refunded", "cancelled"])
+export const orderNotesSchema = z.string().max(2000, "Too long")
+export const reviewReplySchema = z.string().trim().min(1, "Reply can't be empty").max(2000)
+export const totpCodeSchema = z.string().trim().regex(/^[\d\w-]{6,10}$/, "6 digits or a backup code")
+
+export const customerFormSchema = z.object({
+  name: z.string().trim().max(120),
+  phone: z.string().trim().max(20),
+  notes: z.string().max(2000),
+  tagsText: z.string().max(300),
+  marketingOptIn: z.boolean(),
+})
+
+export type CustomerFormValues = z.infer<typeof customerFormSchema>
+
+export const stockAdjustSchema = z.object({
+  delta: z.coerce.number().int("Whole units").min(-1_000_000).max(1_000_000),
+  reason: z.string().trim().max(200),
+})
 
 export const reviewFormSchema = z.object({
   product_id: z.string().uuid("Pick a product"),

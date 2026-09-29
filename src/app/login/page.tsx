@@ -43,6 +43,8 @@ function DeniedMark() {
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [totp, setTotp] = useState("")
+  const [needTotp, setNeedTotp] = useState(false)
   const [show, setShow] = useState(false)
   const [error, setError] = useState("")
   const [phase, setPhase] = useState<Phase>("form")
@@ -55,7 +57,7 @@ export default function LoginPage() {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, totp }),
     })
     if (res.ok) {
       setPhase("success")
@@ -65,6 +67,20 @@ export default function LoginPage() {
       return
     }
     const data = (await res.json().catch(() => ({}))) as { error?: string }
+    if (data.error === "totp_required") {
+      setNeedTotp(true)
+      setPhase("form")
+      setError("")
+      document.getElementById("totp")?.focus()
+      return
+    }
+    if (data.error === "bad_totp") {
+      setError("That code didn't match. Try the current code.")
+      setTotp("")
+      setPhase("form")
+      setTimeout(() => document.getElementById("totp")?.focus(), 0)
+      return
+    }
     setError(data.error === "locked_out" ? "Too many attempts — try again in 10 minutes." : "Wrong email or password.")
     setPassword("")
     setPhase("denied")
@@ -132,12 +148,30 @@ export default function LoginPage() {
                   </button>
                 </div>
               </Field>
+              {needTotp && (
+                <Field label="Authentication code" htmlFor="totp" required hint="6 digits from your authenticator, or a backup code">
+                  <TextInput
+                    id="totp"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    required
+                    value={totp}
+                    onChange={(e) => setTotp(e.target.value)}
+                    placeholder="123456"
+                  />
+                </Field>
+              )}
+              {error && phase === "form" && (
+                <p role="alert" className="text-sm text-bad">
+                  {error}
+                </p>
+              )}
               <button
                 type="submit"
                 disabled={phase !== "form"}
                 className="inline-flex h-11 w-full items-center justify-center rounded-control bg-ink px-5 text-sm font-medium text-paper transition hover:opacity-85 disabled:opacity-50"
               >
-                {phase === "checking" ? "Checking…" : "Sign in"}
+                {phase === "checking" ? "Checking…" : needTotp ? "Verify & sign in" : "Sign in"}
               </button>
             </form>
           </>

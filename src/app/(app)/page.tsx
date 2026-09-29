@@ -29,7 +29,7 @@ export default async function DashboardPage() {
     getStats().catch(() => ({ products: 0, orders: 0, paidOrders: 0, revenueInr: 0, reviews: 0 })),
     getDaily(14).catch(() => []),
     getAlerts().catch(() => ({ lowStock: [], topProducts: [] })),
-    listOrders(5).catch(() => []),
+    listOrders({ limit: 5 }).catch(() => []),
   ])
   const aov = stats.paidOrders > 0 ? Math.round(stats.revenueInr / stats.paidOrders) : 0
 

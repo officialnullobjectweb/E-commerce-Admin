@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { clearSessionCookie, safeEqual, sessionCookie, signSession } from "@/lib/auth"
+import { getTotpState, verifyTotpCode } from "@/lib/api"
 
 const ipOf = (req: Request) =>
   req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -24,9 +25,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "locked_out" }, { status: 429 })
   }
 
-  const { email, password } = (await req.json().catch(() => ({}))) as {
+  const { email, password, totp } = (await req.json().catch(() => ({}))) as {
     email?: string
     password?: string
+    totp?: string
   }
   // Password is the secret (matches storefront legacy envs). Email is an
   // extra gate only when ADMIN_EMAIL is configured.
@@ -41,6 +43,15 @@ export async function POST(req: Request) {
   if (!ok) {
     const remaining = (gate as { remaining?: number }).remaining ?? 0
     return NextResponse.json({ error: "bad_credentials", remaining }, { status: 401 })
+  }
+
+  // Second factor: when TOTP is confirmed, a code is required.
+  const totpState = await getTotpState().catch(() => ({ confirmed: false }))
+  if (totpState.confirmed) {
+    if (!String(totp ?? "").trim())
+      return NextResponse.json({ error: "totp_required" }, { status: 401 })
+    const totpOk = await verifyTotpCode(String(totp)).catch(() => false)
+    if (!totpOk) return NextResponse.json({ error: "bad_totp" }, { status: 401 })
   }
 
   await sb.rpc("clear_login_throttle", { p_ip: ip })

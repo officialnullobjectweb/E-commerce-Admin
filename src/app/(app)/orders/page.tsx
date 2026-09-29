@@ -13,7 +13,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   await requireAdmin()
   const { status: raw } = await searchParams
   const status = (STATUSES as readonly string[]).includes(raw ?? "") ? ((raw ?? "") as Order["status"] | "") : ""
-  const orders = await listOrders(200, status).catch(() => [] as Order[])
+  const orders = await listOrders({ limit: 200, status }).catch(() => [] as Order[])
 
   return (
     <div className="space-y-6">
