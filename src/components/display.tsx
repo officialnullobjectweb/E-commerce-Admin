@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react"
 import { cn } from "@/lib/cn"
+import { ConfirmDialog as ConfirmShell, Modal as DialogShell } from "@/components/ui/dialog"
 
 /* ---------- badges ---------- */
 
@@ -104,7 +105,7 @@ export function EmptyState({
   )
 }
 
-/* ---------- modal + destructive confirm ---------- */
+/* ---------- modal + destructive confirm (Radix-backed, a11y: focus trap, Esc) ---------- */
 
 export function Modal({
   title,
@@ -115,34 +116,7 @@ export function Modal({
   onClose: () => void
   children: ReactNode
 }) {
-  return (
-    <div
-      className="fixed inset-0 z-[90] grid place-items-center bg-ink/50 p-4"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        className="w-full max-w-md rounded-card bg-paper p-6 shadow-pop"
-      >
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="font-display text-lg font-bold">{title}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close dialog"
-            className="flex h-10 w-10 items-center justify-center rounded-control text-xl transition hover:bg-wash"
-          >
-            ×
-          </button>
-        </div>
-        <div className="mt-4">{children}</div>
-      </div>
-    </div>
-  )
+  return <DialogShell title={title} open onOpenChange={(o) => !o && onClose()}>{children}</DialogShell>
 }
 
 export function ConfirmDelete({
@@ -157,29 +131,13 @@ export function ConfirmDelete({
   pending?: boolean
 }) {
   return (
-    <Modal title="Delete this?" onClose={onClose}>
-      <p className="text-sm leading-relaxed text-faint">
-        <span className="font-medium text-ink">{what}</span> will be permanently
-        removed. This cannot be undone.
-      </p>
-      <div className="mt-5 flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onClose}
-          className="h-11 rounded-control border border-line px-5 text-sm transition hover:border-ink"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          onClick={onConfirm}
-          disabled={pending}
-          className="h-11 rounded-control bg-bad px-5 text-sm font-medium text-white transition hover:opacity-85 disabled:opacity-50"
-        >
-          {pending ? "Deleting…" : "Delete"}
-        </button>
-      </div>
-    </Modal>
+    <ConfirmShell
+      open
+      onOpenChange={(o) => !o && onClose()}
+      what={what}
+      pending={pending}
+      onConfirm={onConfirm}
+    />
   )
 }
 

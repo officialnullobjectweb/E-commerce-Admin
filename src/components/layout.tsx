@@ -3,8 +3,18 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState, type ReactNode } from "react"
+import { ChevronDown, LogOut, MoonStar } from "lucide-react"
 import { cn } from "@/lib/cn"
 import { useTheme } from "@/components/theme"
+import { Avatar } from "@/components/display"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 /* ---------- navigation definition (single source) ---------- */
 
@@ -74,6 +84,49 @@ export function ThemeToggle() {
   )
 }
 
+/** Sidebar footer: account menu (theme + sign out) — Shopify-style. */
+export function AccountMenu() {
+  const { mode, toggle } = useTheme()
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label="Account menu"
+          className="flex w-full items-center gap-3 rounded-control px-2 py-2 text-left transition hover:bg-wash focus:outline-none focus-visible:ring-2 focus-visible:ring-signal"
+        >
+          <Avatar name="Admin" size="sm" />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium">Administrator</span>
+            <span className="label block text-faint">Store admin</span>
+          </span>
+          <ChevronDown className="h-4 w-4 shrink-0 text-faint" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-[236px]">
+        <DropdownMenuLabel>Signed in as Admin</DropdownMenuLabel>
+        <DropdownMenuItem onSelect={toggle}>
+          <MoonStar className="h-4 w-4" />
+          {mode === "dark" ? "Light theme" : "Dark theme"}
+          <span className="label ml-auto text-faint">T</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          danger
+          onSelect={() => {
+            fetch("/api/auth/login", { method: "DELETE" }).then(() => {
+              window.location.href = "/login"
+            })
+          }}
+        >
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
   return (
@@ -113,11 +166,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mt-6 flex-1">
           <NavList />
         </div>
-        <div className="flex items-center gap-2 border-t border-line pt-3">
-          <div className="flex-1">
-            <SignOutButton />
-          </div>
-          <ThemeToggle />
+        <div className="border-t border-line pt-3">
+          <AccountMenu />
         </div>
       </aside>
       <div className="min-w-0">

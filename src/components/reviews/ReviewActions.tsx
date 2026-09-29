@@ -1,9 +1,11 @@
 "use client"
 
+import { Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { ConfirmDelete } from "@/components/display"
 import { useToast } from "@/components/feedback"
+import { ActionMenu } from "@/components/ui/dropdown-menu"
 import { deleteReviewAction } from "@/app/(app)/actions"
 
 export function ReviewActions({ id }: { id: string }) {
@@ -14,13 +16,12 @@ export function ReviewActions({ id }: { id: string }) {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="label text-faint transition hover:text-bad"
-      >
-        Delete
-      </button>
+      <ActionMenu
+        label="Review actions"
+        items={[
+          { label: "Delete", danger: true, icon: <Trash2 className="h-4 w-4" />, onSelect: () => setOpen(true) },
+        ]}
+      />
       {open && (
         <ConfirmDelete
           what="this review"

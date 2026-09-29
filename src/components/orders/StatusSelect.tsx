@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/feedback"
+import { SelectMenu } from "@/components/ui/dropdown-menu"
 import { setOrderStatusAction } from "@/app/(app)/actions"
 import type { Order } from "@/lib/types"
 
@@ -14,29 +15,21 @@ export function StatusSelect({ order }: { order: Order }) {
   const [pending, setPending] = useState(false)
 
   return (
-    <label className="flex items-center gap-2">
-      <span className="label text-faint">Status</span>
-      <select
+    <div className="flex items-center gap-2">
+      <SelectMenu
+        label="Payment"
         value={order.status}
         disabled={pending}
-        onChange={async (e) => {
-          const next = e.target.value as Order["status"]
+        options={STATUSES.map((s) => ({ value: s, label: s }))}
+        onChange={async (next) => {
           if (next === order.status) return
           setPending(true)
           const res = await setOrderStatusAction(order.id, next)
           setPending(false)
-          push(res.ok, res.ok ? `Marked ${next}` : (res.error ?? "Couldn't update"))
+          push(res.ok, res.ok ? `Marked ${next}` : res.error ?? "Couldn't update")
           if (res.ok) router.refresh()
-          else e.target.value = order.status
         }}
-        className="h-10 rounded-control border border-line bg-transparent px-3 text-sm focus:border-ink focus:outline-none disabled:opacity-50"
-      >
-        {STATUSES.map((s) => (
-          <option key={s} value={s}>
-            {s}
-          </option>
-        ))}
-      </select>
-    </label>
+      />
+    </div>
   )
 }

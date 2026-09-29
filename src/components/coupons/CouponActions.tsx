@@ -1,9 +1,11 @@
 "use client"
 
+import { Pencil, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { ConfirmDelete, Modal } from "@/components/display"
 import { useToast } from "@/components/feedback"
+import { ActionMenu } from "@/components/ui/dropdown-menu"
 import { Field, NumberInput, Switch } from "@/components/forms"
 import { deleteCouponAction, updateCouponAction } from "@/app/(app)/actions"
 import type { Coupon } from "@/lib/types"
@@ -33,12 +35,13 @@ export function CouponActions({ coupon }: { coupon: Coupon }) {
         label={`${coupon.code} active`}
         onChange={(v) => run(() => updateCouponAction(coupon.id, { active: v }), v ? "Coupon activated" : "Coupon paused")}
       />
-      <button type="button" onClick={() => setMode("edit")} className="label text-faint transition hover:text-ink">
-        Edit
-      </button>
-      <button type="button" onClick={() => setMode("delete")} className="label text-faint transition hover:text-bad">
-        Delete
-      </button>
+      <ActionMenu
+        label={`Actions for ${coupon.code}`}
+        items={[
+          { label: "Edit", icon: <Pencil className="h-4 w-4" />, onSelect: () => setMode("edit") },
+          { label: "Delete", danger: true, icon: <Trash2 className="h-4 w-4" />, onSelect: () => setMode("delete") },
+        ]}
+      />
 
       {mode === "edit" && (
         <Modal title={`Edit ${coupon.code}`} onClose={() => setMode("none")}>

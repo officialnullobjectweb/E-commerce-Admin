@@ -2,8 +2,10 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { Pencil, Trash2 } from "lucide-react"
 import { ConfirmDelete, Modal } from "@/components/display"
 import { useToast } from "@/components/feedback"
+import { ActionMenu } from "@/components/ui/dropdown-menu"
 import { Field, Textarea, TextInput } from "@/components/forms"
 import { deleteCategoryAction, updateCategoryAction } from "@/app/(app)/actions"
 import type { Category } from "@/lib/types"
@@ -29,12 +31,13 @@ export function CategoryActions({ category }: { category: Category }) {
 
   return (
     <span className="flex items-center justify-end gap-3">
-      <button type="button" onClick={() => setMode("edit")} className="label text-faint transition hover:text-ink">
-        Edit
-      </button>
-      <button type="button" onClick={() => setMode("delete")} className="label text-faint transition hover:text-bad">
-        Delete
-      </button>
+      <ActionMenu
+        label={`Actions for ${category.name}`}
+        items={[
+          { label: "Edit", icon: <Pencil className="h-4 w-4" />, onSelect: () => setMode("edit") },
+          { label: "Delete", danger: true, icon: <Trash2 className="h-4 w-4" />, onSelect: () => setMode("delete") },
+        ]}
+      />
 
       {mode === "edit" && (
         <Modal title={`Edit ${category.name}`} onClose={() => setMode("none")}>
