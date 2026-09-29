@@ -453,7 +453,7 @@ export async function saveHomeSectionAction(
   await requireAdmin()
   try {
     await api.saveHomeSection(key, patch as never)
-    invalidate(["/settings"])
+    invalidate(["/settings", "/homepage"])
     return { ok: true }
   } catch (e) {
     return fail(e)

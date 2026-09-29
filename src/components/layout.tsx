@@ -40,6 +40,7 @@ export const NAV: NavEntry[] = [
   { href: "/reviews", label: "Reviews", icon: <Icon d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z" /> },
   { href: "/categories", label: "Categories", icon: <Icon d="M4 4h7v7H4zM13 4h7v4h-7zM13 11h7v9h-7zM4 14h7v6H4z" /> },
   { href: "/coupons", label: "Coupons", icon: <Icon d="M3 9V7a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 000 6v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 000-6zM13 5v2M13 11v2M13 17v2" /> },
+  { href: "/homepage", label: "Homepage", icon: <Icon d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z" /> },
   { href: "/settings", label: "Settings", icon: <Icon d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" /> },
 ]
 
