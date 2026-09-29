@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/*
+  Flowcase Admin tokens — restrained premium system.
+  Neutral ink/paper surfaces, ONE signal-blue accent reserved for primary
+  actions and focus. Dark theme mirrors every token (never inverted).
+*/
+@theme {
+  --font-display: var(--font-archivo), system-ui, sans-serif;
+  --font-sans: var(--font-inter, system-ui, sans-serif);
+  --font-mono: ui-monospace, "SF Mono", monospace;
+
+  /* surfaces */
+  --color-paper: #ffffff;
+  --color-ink: #0a0a0a;
+  --color-wash: #f4f4f5;
+  --color-line: #e5e5e5;
+  --color-faint: #52525b;
+  /* accent (primary actions + focus only) */
+  --color-signal: #0700ff;
+  --color-signal-ink: #ffffff;
+  /* status */
+  --color-ok: #15803d;
+  --color-warn: #b45309;
+  --color-bad: #b91c1c;
+
+  /* radius */
+  --radius-card: 1rem;
+  --radius-control: 0.625rem;
+
+  /* shadows (subtle, consistent) */
+  --shadow-pop: 0 8px 30px rgb(0 0 0 / 0.12);
+  --shadow-lift: 0 2px 10px rgb(0 0 0 / 0.06);
+
+  /* motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 150ms;
+  --dur-med: 250ms;
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* dark theme pairs — every surface/text/border re-mapped, contrast kept */
+.dark body {
+  background: #09090b;
+  color: #fafafa;
+}
+.dark {
+  --color-paper: #09090b;
+  --color-ink: #fafafa;
+  --color-wash: #131316;
+  --color-line: #26262b;
+  --color-faint: #a1a1aa;
+  --shadow-pop: 0 8px 30px rgb(0 0 0 / 0.5);
+  --shadow-lift: 0 2px 10px rgb(0 0 0 / 0.4);
+}
+
+::selection {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
