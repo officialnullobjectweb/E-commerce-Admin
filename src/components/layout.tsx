@@ -158,7 +158,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[248px_1fr]">
       {/* desktop sidebar */}
-      <aside className="hidden border-r border-line lg:flex lg:flex-col lg:p-5">
+      <aside className="hidden border-r border-line lg:flex lg:flex-col lg:p-5 print:hidden">
         <Link href="/" className="font-display px-3 text-xl font-extrabold tracking-tight" aria-label="Flowcase admin home">
           Flowcase.
         </Link>
@@ -172,7 +172,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
       <div className="min-w-0">
         {/* mobile topbar */}
-        <div className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-line bg-paper px-4 py-3 lg:hidden">
+        <div className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-line bg-paper px-4 py-3 lg:hidden print:hidden">
           <Link href="/" className="font-display text-lg font-extrabold tracking-tight" aria-label="Flowcase admin home">
             Flowcase.
           </Link>
@@ -187,7 +187,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
         </div>
         {open && (
-          <div className="border-b border-line bg-paper px-4 py-3 lg:hidden">
+          <div className="border-b border-line bg-paper px-4 py-3 lg:hidden print:hidden">
             <NavList onNavigate={() => setOpen(false)} />
           <div className="mt-2 flex items-center gap-2 border-t border-line pt-2">
             <div className="flex-1">

@@ -142,3 +142,25 @@ body {
 .fc-panel[data-state="closed"] { animation: fc-fade-out 140ms ease-in forwards; }
 .fc-menu[data-state="open"] { animation: fc-pop-in 140ms var(--ease-out); }
 .fc-menu[data-state="closed"] { animation: fc-pop-out 100ms ease-in forwards; }
+
+/* invoice printing: only the sheet prints */
+@media print {
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  body {
+    background: #fff !important;
+  }
+  .invoice-sheet {
+    background: #fff !important;
+    color: #111 !important;
+    border: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .invoice-sheet .text-faint {
+    color: #555 !important;
+  }
+}

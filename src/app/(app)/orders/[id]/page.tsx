@@ -2,6 +2,8 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Badge, CopyButton, MoneyDisplay } from "@/components/display"
 import { Breadcrumbs, ContentSection, PageHeader } from "@/components/layout"
+import { NotesBox } from "@/components/orders/NotesBox"
+import { StateSelect } from "@/components/orders/StateSelect"
 import { StatusSelect } from "@/components/orders/StatusSelect"
 import { getOrder } from "@/lib/api"
 import { requireAdmin } from "@/lib/auth"
@@ -26,11 +28,18 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         title={`Order ${order.id.slice(0, 8)}…`}
         description={`Placed ${dateTime(order.createdAt)}`}
         actions={
-          <span className="flex items-center gap-3">
+          <span className="flex flex-wrap items-center gap-3">
             <Badge tone={order.status === "paid" ? "ok" : order.status === "pending" ? "warn" : "bad"}>
               {order.status}
             </Badge>
             <StatusSelect order={order} />
+            <StateSelect order={order} />
+            <Link
+              href={`/orders/${order.id}/invoice`}
+              className="label inline-flex h-10 items-center rounded-control border border-line px-3.5 transition hover:border-ink"
+            >
+              Invoice
+            </Link>
           </span>
         }
       />
@@ -140,6 +149,10 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             ← Back to orders
           </Link>
         </p>
+      </ContentSection>
+
+      <ContentSection title="Notes">
+        <NotesBox orderId={order.id} notes={order.notes ?? ""} />
       </ContentSection>
     </div>
   )
