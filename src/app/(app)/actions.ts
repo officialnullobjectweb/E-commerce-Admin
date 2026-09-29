@@ -215,19 +215,6 @@ export async function deleteCategoryAction(id: string): Promise<ActionResult> {
 
 /* ── coupons ── */
 
-export async function createCouponAction(input: unknown): Promise<ActionResult> {
-  await requireAdmin()
-  const v = parse(couponFormSchema, input)
-  if ("ok" in v) return v
-  try {
-    await api.createCoupon(toCouponInput(v.data))
-    invalidate(["/coupons"])
-    return { ok: true }
-  } catch (e) {
-    return fail(e)
-  }
-}
-
 export async function updateCouponAction(
   id: string,
   patch: Partial<{ percent: number; active: boolean }>

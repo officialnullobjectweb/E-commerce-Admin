@@ -315,6 +315,14 @@ export function CategoriesTable({ categories }: { categories: Category[] }) {
 }
 
 export function CouponsTable({ coupons }: { coupons: Coupon[] }) {
+  const discountLabel = (c: Coupon) =>
+    c.type === "percent"
+      ? `${c.percent}%`
+      : c.type === "fixed"
+        ? `₹${c.amount}`
+        : c.type === "bogo"
+          ? `Buy ${c.bogoBuyQty} get ${c.bogoGetQty}`
+          : "Free shipping"
   const columns: ColumnDef<Coupon, unknown>[] = [
     {
       accessorKey: "code",
@@ -322,9 +330,19 @@ export function CouponsTable({ coupons }: { coupons: Coupon[] }) {
       cell: ({ row }) => <span className="font-mono font-medium">{row.original.code}</span>,
     },
     {
-      accessorKey: "percent",
+      id: "discount",
       header: "Discount",
-      cell: ({ row }) => <span className="tabular-nums">{row.original.percent}%</span>,
+      cell: ({ row }) => <span className="tabular-nums whitespace-nowrap">{discountLabel(row.original)}</span>,
+    },
+    {
+      id: "usage",
+      header: "Usage",
+      cell: ({ row }) => (
+        <span className="tabular-nums whitespace-nowrap text-faint">
+          {row.original.redemptionsUsed}
+          {row.original.maxRedemptions > 0 ? ` / ${row.original.maxRedemptions}` : ""}
+        </span>
+      ),
     },
     {
       accessorKey: "active",
