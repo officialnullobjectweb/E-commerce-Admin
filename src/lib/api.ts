@@ -881,6 +881,18 @@ export async function purgeExpiredArchive(): Promise<void> {
   if (error) err(error)
 }
 
+/* ── health: worker /health + a trivial supabase round-trip ── */
+
+export async function healthCheck(): Promise<{ worker: boolean; db: boolean }> {
+  const worker = await fetch(`${process.env.WORKER_URL}/health`, { cache: "no-store" })
+    .then((r) => r.ok)
+    .catch(() => false)
+  const db = await getSettings()
+    .then(() => true)
+    .catch(() => false)
+  return { worker, db }
+}
+
 /* ── TOTP 2FA ── */
 
 export async function getTotpState(): Promise<{ confirmed: boolean }> {

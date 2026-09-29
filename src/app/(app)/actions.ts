@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import QRCode from "qrcode"
 import { z } from "zod"
 import * as api from "@/lib/api"
 import { requireAdmin } from "@/lib/auth"
@@ -506,13 +507,19 @@ export async function purgeArchiveAction(): Promise<ActionResult> {
   }
 }
 
+export async function healthAction(): Promise<ActionResult> {
+  await requireAdmin()
+  return { ok: true, data: await api.healthCheck() }
+}
+
 export async function startTotpAction(): Promise<ActionResult> {
   await requireAdmin()
   try {
     const setup = await api.setupTotp()
-    return { ok: true, data: setup }
+    const qr = await QRCode.toDataURL(setup.uri, { margin: 1, width: 240 })
+    return { ok: true, data: { ...setup, qr } }
   } catch (e) {
-    return fail(e)
+    return { ok: false, error: e instanceof Error ? e.message : "Couldn't start setup" }
   }
 }
 

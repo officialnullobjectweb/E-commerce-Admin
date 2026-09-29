@@ -1,7 +1,10 @@
 import { ContentSection, PageHeader } from "@/components/layout"
 import { AnnouncementForm } from "@/components/settings/AnnouncementForm"
+import { ArchiveSection } from "@/components/settings/ArchiveSection"
+import { HealthSection } from "@/components/settings/HealthSection"
 import { PromoForm } from "@/components/settings/PromoForm"
-import { getSettings } from "@/lib/api"
+import { TwoFactorSection } from "@/components/settings/TwoFactorSection"
+import * as api from "@/lib/api"
 import { requireAdmin } from "@/lib/auth"
 import type { AnnouncementSettings, PromoSettings } from "@/lib/types"
 
@@ -28,14 +31,23 @@ const DEFAULT_PROMO: PromoSettings = {
 
 export default async function SettingsPage() {
   await requireAdmin()
-  const settings = await getSettings().catch(() => ({
-    announcement: null,
-    promo: null,
-  }))
+  const [settings, totp, archive, health] = await Promise.all([
+    api.getSettings().catch(() => ({ announcement: null, promo: null })),
+    api.getTotpState().catch(() => ({ confirmed: false })),
+    api.listArchive().catch(() => []),
+    api.healthCheck(),
+  ])
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Settings" description="Storefront announcement bar and promo modal." />
+      <PageHeader title="Settings" description="Security, storefront messages, trash, and system health." />
+
+      <ContentSection
+        title="Two-factor authentication"
+        description="Require a rotating authenticator code at login."
+      >
+        <TwoFactorSection confirmed={totp.confirmed} />
+      </ContentSection>
 
       <ContentSection
         title="Announcement bar"
@@ -49,6 +61,20 @@ export default async function SettingsPage() {
         description="Timed popup — keep it off unless you mean it."
       >
         <PromoForm value={settings.promo ?? DEFAULT_PROMO} />
+      </ContentSection>
+
+      <ContentSection
+        title="Archive"
+        description="Deleted products, categories, coupons and reviews — restore within 7 days."
+      >
+        <ArchiveSection items={archive} />
+      </ContentSection>
+
+      <ContentSection
+        title="System health"
+        description="Worker API and database reachability."
+      >
+        <HealthSection initial={health} />
       </ContentSection>
     </div>
   )
