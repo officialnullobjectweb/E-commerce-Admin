@@ -59,6 +59,10 @@ export const variantFormSchema = z.object({
   price_inr: z.coerce.number().min(0, "Must be ≥ 0").max(10_000_000),
   price_usd: z.coerce.number().min(0, "Must be ≥ 0").max(1_000_000),
   inventory_qty: z.coerce.number().int("Whole units").min(0, "Must be ≥ 0").max(1_000_000),
+  options: z
+    .record(z.string().trim().min(1).max(40), z.string().trim().max(60))
+    .refine((o) => Object.keys(o).length <= 8, "Too many options")
+    .default({}),
 })
 
 export type VariantFormValues = z.infer<typeof variantFormSchema>

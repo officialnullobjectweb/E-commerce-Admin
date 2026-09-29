@@ -4,10 +4,10 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { ConfirmDelete } from "@/components/display"
 import { useToast } from "@/components/feedback"
-import { Field, NumberInput, TextInput } from "@/components/forms"
+import { Field, NumberInput, Select, TextInput } from "@/components/forms"
 import { createVariantAction, deleteVariantAction, updateVariantAction } from "@/app/(app)/actions"
 import { variantFormSchema, type VariantFormValues } from "@/lib/schemas"
-import type { Variant } from "@/lib/types"
+import type { OptionAxis, Variant } from "@/lib/types"
 
 type Draft = VariantFormValues
 
@@ -17,9 +17,40 @@ const toDraft = (v: Variant): Draft => ({
   price_inr: v.priceInr,
   price_usd: v.priceUsd,
   inventory_qty: v.stock,
+  options: { ...(v.options ?? {}) },
 })
 
-function VariantRow({ variant, productId }: { variant: Variant; productId: string }) {
+function OptionSelects({
+  axes,
+  options,
+  onChange,
+  idFor,
+}: {
+  axes: OptionAxis[]
+  options: Record<string, string>
+  onChange: (axis: string, value: string) => void
+  idFor: (axis: OptionAxis) => string
+}) {
+  if (axes.length === 0) return null
+  return (
+    <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+      {axes.map((axis) => (
+        <Field key={axis.id} label={axis.name} htmlFor={idFor(axis)}>
+          <Select id={idFor(axis)} value={options[axis.name] ?? ""} onChange={(e) => onChange(axis.name, e.target.value)}>
+            <option value="">— none —</option>
+            {axis.values.map((v) => (
+              <option key={v} value={v}>
+                {v}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      ))}
+    </div>
+  )
+}
+
+function VariantRow({ variant, productId, axes }: { variant: Variant; productId: string; axes: OptionAxis[] }) {
   const push = useToast()
   const router = useRouter()
   const [draft, setDraft] = useState<Draft>(toDraft(variant))
@@ -29,6 +60,13 @@ function VariantRow({ variant, productId }: { variant: Variant; productId: strin
   const dirty = JSON.stringify(draft) !== JSON.stringify(toDraft(variant))
   const set = (k: keyof Draft) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setDraft({ ...draft, [k]: e.target.value as never })
+
+  const setOption = (axis: string, value: string) => {
+    const options = { ...draft.options }
+    if (value) options[axis] = value
+    else delete options[axis]
+    setDraft({ ...draft, options })
+  }
 
   const save = async () => {
     const parsed = variantFormSchema.safeParse(draft)
@@ -62,6 +100,12 @@ function VariantRow({ variant, productId }: { variant: Variant; productId: strin
           <NumberInput id={`${variant.id}-qty`} value={draft.inventory_qty} onChange={set("inventory_qty")} min={0} />
         </Field>
       </div>
+      <OptionSelects
+        axes={axes}
+        options={draft.options}
+        onChange={setOption}
+        idFor={(axis) => `${variant.id}-${axis.id}`}
+      />
       <div className="mt-3 flex items-center justify-end gap-2">
         <button
           type="button"
@@ -95,9 +139,17 @@ function VariantRow({ variant, productId }: { variant: Variant; productId: strin
   )
 }
 
-const EMPTY: Draft = { title: "", sku: "", price_inr: 0, price_usd: 0, inventory_qty: 10 }
+const EMPTY: Draft = { title: "", sku: "", price_inr: 0, price_usd: 0, inventory_qty: 10, options: {} }
 
-export function VariantsPanel({ productId, variants }: { productId: string; variants: Variant[] }) {
+export function VariantsPanel({
+  productId,
+  variants,
+  axes,
+}: {
+  productId: string
+  variants: Variant[]
+  axes: OptionAxis[]
+}) {
   const push = useToast()
   const router = useRouter()
   const [draft, setDraft] = useState<Draft>(EMPTY)
@@ -105,6 +157,13 @@ export function VariantsPanel({ productId, variants }: { productId: string; vari
 
   const set = (k: keyof Draft) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setDraft({ ...draft, [k]: e.target.value as never })
+
+  const setOption = (axis: string, value: string) => {
+    const options = { ...draft.options }
+    if (value) options[axis] = value
+    else delete options[axis]
+    setDraft({ ...draft, options })
+  }
 
   const add = async () => {
     const parsed = variantFormSchema.safeParse(draft)
@@ -128,7 +187,7 @@ export function VariantsPanel({ productId, variants }: { productId: string; vari
         <p className="text-sm text-faint">No variants yet — add the first one below.</p>
       )}
       {variants.map((v) => (
-        <VariantRow key={v.id} variant={v} productId={productId} />
+        <VariantRow key={v.id} variant={v} productId={productId} axes={axes} />
       ))}
 
       <div className="rounded-card border border-dashed border-line p-4">
@@ -150,6 +209,12 @@ export function VariantsPanel({ productId, variants }: { productId: string; vari
             <NumberInput id="new-v-qty" value={draft.inventory_qty} onChange={set("inventory_qty")} min={0} />
           </Field>
         </div>
+        <OptionSelects
+          axes={axes}
+          options={draft.options}
+          onChange={setOption}
+          idFor={(axis) => `new-v-${axis.id}`}
+        />
         <div className="mt-3 flex justify-end">
           <button
             type="button"

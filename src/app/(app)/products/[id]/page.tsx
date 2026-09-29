@@ -4,7 +4,7 @@ import { DeleteProductButton } from "@/components/products/DeleteProduct"
 import { ImagesPanel } from "@/components/products/Images"
 import { ProductForm } from "@/components/products/ProductForm"
 import { VariantsPanel } from "@/components/products/Variants"
-import { getProduct, listCategories } from "@/lib/api"
+import { getProduct, listCategories, listOptionAxes } from "@/lib/api"
 import { requireAdmin } from "@/lib/auth"
 import type { Category, Product } from "@/lib/types"
 
@@ -13,9 +13,10 @@ export const metadata = { title: "Edit product", robots: { index: false, follow:
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin()
   const { id } = await params
-  const [product, categories] = await Promise.all([
+  const [product, categories, axes] = await Promise.all([
     getProduct(id),
     listCategories().catch(() => [] as Category[]),
+    listOptionAxes().catch(() => []),
   ])
   if (!product) notFound()
 
@@ -34,9 +35,9 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
 
       <ContentSection
         title="Variants"
-        description="Price (INR + USD) and stock per sellable option."
+        description="Price (INR + USD), option values and stock per sellable variant."
       >
-        <VariantsPanel productId={product.id} variants={product.variants} />
+        <VariantsPanel productId={product.id} variants={product.variants} axes={axes} />
       </ContentSection>
 
       <ContentSection title="Images" description="Gallery order is the storefront order.">

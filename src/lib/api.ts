@@ -80,7 +80,15 @@ interface ProductRow {
   review_count: number | null
   category_id: string | null
   product_images: { url: string; position: number }[]
-  variants: { id: string; title: string; sku: string; price_inr: number; price_usd: number; inventory_qty: number }[]
+  variants: {
+    id: string
+    title: string
+    sku: string
+    price_inr: number
+    price_usd: number
+    inventory_qty: number
+    options: Record<string, string> | null
+  }[]
 }
 
 function toProduct(r: ProductRow): Product {
@@ -108,11 +116,12 @@ function toProduct(r: ProductRow): Product {
       priceInr: v.price_inr,
       priceUsd: v.price_usd,
       stock: v.inventory_qty,
+      options: v.options ?? {},
     })),
   }
 }
 
-const POOL = "*, product_images(url,position), variants(id,title,sku,price_inr,price_usd,inventory_qty)"
+const POOL = "*, product_images(url,position), variants(id,title,sku,price_inr,price_usd,inventory_qty,options)"
 
 export async function listProducts(): Promise<Product[]> {
   const { data, error } = await anon().from("products").select(POOL).order("created_at", { ascending: false }).limit(200)
@@ -478,6 +487,7 @@ export interface VariantInput {
   price_inr: number
   price_usd: number
   inventory_qty: number
+  options?: Record<string, string>
 }
 
 export async function createVariant(input: VariantInput): Promise<string> {

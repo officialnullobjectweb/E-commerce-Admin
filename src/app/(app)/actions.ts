@@ -477,7 +477,8 @@ export async function saveOptionAxisAction(input: { id?: string; name: string; v
   if (!input.name.trim()) return { ok: false, error: "Name is required" }
   try {
     await api.saveOptionAxis({ ...input, name: input.name.trim() })
-    invalidate(["/categories"])
+    invalidate(["/categories", "/products"])
+    revalidatePath("/products/[id]", "page")
     return { ok: true }
   } catch (e) {
     return fail(e)
@@ -488,7 +489,8 @@ export async function deleteOptionAxisAction(id: string): Promise<ActionResult> 
   await requireAdmin()
   try {
     await api.deleteOptionAxis(id)
-    invalidate(["/categories"])
+    invalidate(["/categories", "/products"])
+    revalidatePath("/products/[id]", "page")
     return { ok: true }
   } catch (e) {
     return fail(e)

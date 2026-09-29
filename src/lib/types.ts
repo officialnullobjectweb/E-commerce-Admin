@@ -26,6 +26,7 @@ export interface Variant {
   priceInr: number
   priceUsd: number
   stock: number
+  options: Record<string, string>
 }
 
 export interface OrderItem {
