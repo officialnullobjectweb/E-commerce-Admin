@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { PageHeader, ContentSection } from "@/components/layout"
+import { PageHeader, Disclosure } from "@/components/layout"
 import { ReviewsTable } from "@/components/list-tables"
 import { AddReview } from "@/components/reviews/AddReview"
 import { listProducts, listReviews } from "@/lib/api"
@@ -22,15 +22,16 @@ export default async function ReviewsPage({ searchParams }: { searchParams: Prom
   const avg =
     allReviews.length > 0
       ? (allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length).toFixed(1)
-      : "—"
+      : null
   const pending = allReviews.filter((r) => r.status === "pending").length
+
+  const description = avg
+    ? `Avg ${avg}★ · ${pending} pending · ${allReviews.length} total${status ? ` · ${status} only` : ""}`
+    : "No reviews yet — customers and manual entries land here."
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Reviews"
-        description={`Avg ${avg}★ · ${pending} pending · ${allReviews.length} total${status ? ` · ${status} only` : ""}`}
-      />
+      <PageHeader title="Reviews" description={description} />
 
       <nav aria-label="Filter by status" className="flex flex-wrap gap-2">
         {STATUSES.map((s) => {
@@ -42,8 +43,8 @@ export default async function ReviewsPage({ searchParams }: { searchParams: Prom
               aria-current={active ? "page" : undefined}
               className={
                 active
-                  ? "label rounded-full bg-ink px-3.5 py-2 text-paper"
-                  : "label rounded-full border border-line px-3.5 py-2 text-faint transition hover:border-ink hover:text-ink"
+                  ? "label rounded-full bg-ink px-3.5 py-2 capitalize text-paper"
+                  : "label rounded-full border border-line px-3.5 py-2 capitalize text-faint transition hover:border-ink hover:text-ink"
               }
             >
               {s || "all"}
@@ -53,9 +54,9 @@ export default async function ReviewsPage({ searchParams }: { searchParams: Prom
         })}
       </nav>
 
-      <ContentSection title="Add a review manually" description="For offline feedback or test data.">
+      <Disclosure title="Add a review manually" description="For offline feedback or test data." open={allReviews.length === 0}>
         <AddReview products={products.map((p) => ({ id: p.id, title: p.title }))} />
-      </ContentSection>
+      </Disclosure>
 
       <ReviewsTable reviews={reviews} />
     </div>

@@ -161,7 +161,7 @@ export function SelectMenu<T extends string>({
           )}
         >
           <span className="text-faint">{label}:</span>
-          <span className="font-medium">{current?.label ?? value}</span>
+          <span className="font-medium capitalize">{current?.label ?? value}</span>
           <ChevronDown className="h-3.5 w-3.5 text-faint" />
         </button>
       </RD.Trigger>
@@ -176,7 +176,7 @@ export function SelectMenu<T extends string>({
               value={o.value}
               className="flex cursor-pointer select-none items-center justify-between gap-6 rounded-[8px] px-2.5 py-2 text-sm outline-none transition data-[highlighted]:bg-wash"
             >
-              <span>{o.label}</span>
+              <span className="capitalize">{o.label}</span>
               <RD.ItemIndicator>
                 <Check className="h-4 w-4 text-signal" />
               </RD.ItemIndicator>

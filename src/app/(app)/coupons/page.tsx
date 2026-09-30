@@ -1,4 +1,4 @@
-import { PageHeader, ContentSection } from "@/components/layout"
+import { PageHeader, Disclosure } from "@/components/layout"
 import { CouponsTable } from "@/components/list-tables"
 import { CouponForm } from "@/components/coupons/CouponForm"
 import { listCoupons } from "@/lib/api"
@@ -15,9 +15,9 @@ export default async function CouponsPage() {
     <div className="space-y-6">
       <PageHeader title="Coupons" description={`${coupons.length} total · validated at checkout`} />
 
-      <ContentSection title="New coupon" description="Codes are letters + digits, applied at checkout.">
+      <Disclosure title="New coupon" description="Codes are letters + digits, applied at checkout." open={coupons.length === 0}>
         <CouponForm />
-      </ContentSection>
+      </Disclosure>
 
       <CouponsTable coupons={coupons} />
     </div>

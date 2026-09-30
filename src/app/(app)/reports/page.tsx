@@ -7,7 +7,7 @@ import type { DayPoint } from "@/lib/types"
 
 export const metadata = { title: "Reports", robots: { index: false, follow: false } }
 
-const th = "px-4 py-3 text-left align-middle"
+const th = "label px-4 py-3 text-left align-middle text-faint"
 const td = "px-4 py-3 align-middle"
 
 export default async function ReportsPage() {
@@ -35,7 +35,7 @@ export default async function ReportsPage() {
         actions={
           <a
             href="/api/orders/export"
-            className="label inline-flex h-10 items-center gap-2 rounded-control border border-line px-3.5 transition hover:border-ink"
+            className="inline-flex h-10 items-center gap-2 rounded-control border border-line px-3.5 text-sm font-medium transition hover:border-ink"
           >
             <Download className="h-3.5 w-3.5" aria-hidden="true" />
             Export orders CSV

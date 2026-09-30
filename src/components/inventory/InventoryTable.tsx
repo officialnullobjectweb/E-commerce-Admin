@@ -149,15 +149,18 @@ export function InventoryTable({ rows, threshold }: { rows: InventoryRow[]; thre
     {
       accessorKey: "qty",
       header: "Stock",
-      cell: ({ row }) => (
-        <Badge tone={row.original.state === "out" ? "bad" : row.original.state === "low" ? "warn" : "ok"}>
-          {row.original.state === "out" ? "out of stock" : `${row.original.qty} in stock`}
-        </Badge>
-      ),
+      cell: ({ row }) =>
+        row.original.state === "out" ? (
+          <Badge tone="bad">Out</Badge>
+        ) : row.original.state === "low" ? (
+          <Badge tone="warn">{row.original.qty} left</Badge>
+        ) : (
+          <span className="tabular-nums">{row.original.qty}</span>
+        ),
     },
     {
       id: "actions",
-      header: "",
+      header: () => <span className="sr-only">Actions</span>,
       enableSorting: false,
       cell: ({ row }) => <StockAdjust row={row.original} />,
     },

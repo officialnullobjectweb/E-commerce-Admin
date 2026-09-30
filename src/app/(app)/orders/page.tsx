@@ -47,27 +47,29 @@ export default async function OrdersPage({
         description={`${orders.length} shown${filters.length ? ` · ${filters.join(" · ")}` : ""}`}
       />
 
-      <nav aria-label="Filter by status" className="flex flex-wrap gap-2">
-        {STATUSES.map((s) => {
-          const active = s === status
-          return (
-            <Link
-              key={s || "all"}
-              href={linkFor(s)}
-              aria-current={active ? "page" : undefined}
-              className={
-                active
-                  ? "label rounded-full bg-ink px-3.5 py-2 text-paper"
-                  : "label rounded-full border border-line px-3.5 py-2 text-faint transition hover:border-ink hover:text-ink"
-              }
-            >
-              {s || "all"}
-            </Link>
-          )
-        })}
-      </nav>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <nav aria-label="Filter by status" className="flex flex-wrap gap-2">
+          {STATUSES.map((s) => {
+            const active = s === status
+            return (
+              <Link
+                key={s || "all"}
+                href={linkFor(s)}
+                aria-current={active ? "page" : undefined}
+                className={
+                  active
+                    ? "label rounded-full bg-ink px-3.5 py-2 capitalize text-paper"
+                    : "label rounded-full border border-line px-3.5 py-2 capitalize text-faint transition hover:border-ink hover:text-ink"
+                }
+              >
+                {s || "all"}
+              </Link>
+            )
+          })}
+        </nav>
 
-      <OrdersFilters state={state} method={method} days={days} />
+        <OrdersFilters state={state} method={method} days={days} />
+      </div>
 
       <OrdersTable orders={orders} status={status} />
     </div>

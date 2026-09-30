@@ -66,7 +66,7 @@ export function AnnouncementForm({ value }: { value: AnnouncementSettings }) {
         <legend className="label mb-2 text-faint">Show on pages</legend>
         <div className="flex flex-wrap gap-4">
           {PAGES.map((p) => (
-            <label key={p} className="flex items-center gap-2 text-sm">
+            <label key={p} className="flex items-center gap-2 text-sm capitalize">
               <input
                 type="checkbox"
                 value={p}

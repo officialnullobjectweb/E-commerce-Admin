@@ -22,7 +22,7 @@ export function Badge({
   children: ReactNode
 }) {
   return (
-    <span className={cn("label inline-flex items-center rounded-full border px-2.5 py-1", badgeTones[tone])}>
+    <span className={cn("label inline-flex items-center rounded-full border px-2.5 py-1 capitalize", badgeTones[tone])}>
       {children}
     </span>
   )

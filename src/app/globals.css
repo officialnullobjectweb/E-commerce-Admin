@@ -74,11 +74,9 @@ body {
 }
 
 @utility label {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  line-height: 1.2;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  line-height: 1.3;
   font-weight: 500;
 }
 
@@ -94,30 +92,6 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
-
-/* ---------- overlay/motion primitives (Radix data-state animations) ---------- */
-@keyframes fc-fade-in {
-  from { opacity: 0; }
-}
-@keyframes fc-fade-out {
-  to { opacity: 0; }
-}
-@keyframes fc-pop-in {
-  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
-}
-@keyframes fc-pop-out {
-  to { opacity: 0; transform: scale(0.98); }
-}
-@keyframes fc-slide-up {
-  from { opacity: 0; transform: translateY(12px) scale(0.99); }
-}
-
-.fc-overlay[data-state="open"] { animation: fc-fade-in 180ms var(--ease-out); }
-.fc-overlay[data-state="closed"] { animation: fc-fade-out 140ms ease-in forwards; }
-.fc-panel[data-state="open"] { animation: fc-slide-up 220ms var(--ease-out); }
-.fc-panel[data-state="closed"] { animation: fc-fade-out 140ms ease-in forwards; }
-.fc-menu[data-state="open"] { animation: fc-pop-in 140ms var(--ease-out); }
-.fc-menu[data-state="closed"] { animation: fc-pop-out 100ms ease-in forwards; }
 
 /* ---------- overlay/motion primitives (Radix data-state animations) ---------- */
 @keyframes fc-fade-in {

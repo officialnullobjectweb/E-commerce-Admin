@@ -195,24 +195,26 @@ export function DataTable<T extends { id: string }>({
           Page {table.getState().pagination.pageIndex + 1} of {Math.max(1, table.getPageCount())} ·{" "}
           {filtered.length} row{filtered.length === 1 ? "" : "s"}
         </p>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="h-10 rounded-control border border-line px-4 text-sm transition hover:border-ink disabled:opacity-40"
-          >
-            ← Prev
-          </button>
-          <button
-            type="button"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="h-10 rounded-control border border-line px-4 text-sm transition hover:border-ink disabled:opacity-40"
-          >
-            Next →
-          </button>
-        </div>
+        {table.getPageCount() > 1 && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="h-10 rounded-control border border-line px-4 text-sm transition hover:border-ink disabled:opacity-40"
+            >
+              ← Prev
+            </button>
+            <button
+              type="button"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="h-10 rounded-control border border-line px-4 text-sm transition hover:border-ink disabled:opacity-40"
+            >
+              Next →
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

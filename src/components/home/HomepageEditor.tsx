@@ -87,22 +87,22 @@ export function HomepageEditor({ sections }: { sections: HomeSection[] }) {
 
   if (!rows.length)
     return (
-      <p className="border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+      <p className="border border-dashed border-line p-8 text-center text-sm text-faint">
         No homepage sections found — run supabase/schema-11.sql.
       </p>
     )
 
   return (
-    <ul className="divide-y divide-border border border-border">
+    <ul className="divide-y divide-line border border-line">
       {rows.map((row, i) => (
         <li
           key={row.key}
           className="flex flex-wrap items-center gap-3 px-3 py-3 sm:flex-nowrap sm:px-4"
         >
-          <span className="label w-6 shrink-0 text-muted-foreground">
+          <span className="label w-6 shrink-0 text-faint">
             {String(i + 1).padStart(2, "0")}
           </span>
-          <span className="label w-36 shrink-0 truncate text-foreground" title={row.key}>
+          <span className="w-36 shrink-0 truncate font-mono text-xs text-faint" title={row.key}>
             {row.key}
           </span>
           <TextInput
@@ -132,7 +132,7 @@ export function HomepageEditor({ sections }: { sections: HomeSection[] }) {
               onClick={() => void move(i, -1)}
               disabled={busy || i === 0}
               aria-label={`Move ${row.title} up`}
-              className="grid h-8 w-8 place-items-center border border-border transition hover:bg-muted disabled:opacity-40"
+              className="grid h-8 w-8 place-items-center border border-line transition hover:bg-wash disabled:opacity-40"
             >
               <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
@@ -141,7 +141,7 @@ export function HomepageEditor({ sections }: { sections: HomeSection[] }) {
               onClick={() => void move(i, 1)}
               disabled={busy || i === rows.length - 1}
               aria-label={`Move ${row.title} down`}
-              className="grid h-8 w-8 place-items-center border border-border transition hover:bg-muted disabled:opacity-40"
+              className="grid h-8 w-8 place-items-center border border-line transition hover:bg-wash disabled:opacity-40"
             >
               <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
             </button>

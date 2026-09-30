@@ -22,7 +22,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
   const columns: ColumnDef<Product, unknown>[] = [
     {
       id: "image",
-      header: "",
+      header: () => <span className="sr-only">Image</span>,
       enableSorting: false,
       cell: ({ row }) =>
         row.original.thumbnail ? (
@@ -51,22 +51,26 @@ export function ProductsTable({ products }: { products: Product[] }) {
     },
     {
       id: "type",
-      header: "Type",
+      header: "Brand",
       enableSorting: false,
-      cell: ({ row }) => (
-        <span className="flex flex-wrap gap-1">
-          <Badge tone="neutral">{row.original.collection}</Badge>
-          <Badge tone="ink">{row.original.brand}</Badge>
-          {row.original.badges && <Badge tone="warn">{row.original.badges}</Badge>}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const { brand, collection, badges } = row.original
+        return (
+          <span className="flex flex-wrap items-center gap-2 text-xs text-faint">
+            <span className="whitespace-nowrap">{brand === collection ? brand : `${brand} · ${collection}`}</span>
+            {badges && <Badge tone="warn">{badges}</Badge>}
+          </span>
+        )
+      },
     },
     {
       id: "stock",
       header: "Stock",
       cell: ({ row }) => {
         const s = stockOf(row.original)
-        return <Badge tone={s === 0 ? "bad" : s < 10 ? "warn" : "ok"}>{s}</Badge>
+        if (s === 0) return <Badge tone="bad">Out</Badge>
+        if (s < 10) return <Badge tone="warn">{s} left</Badge>
+        return <span className="tabular-nums">{s}</span>
       },
     },
     {
@@ -81,7 +85,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
     },
     {
       id: "edit",
-      header: "",
+      header: () => <span className="sr-only">Edit</span>,
       enableSorting: false,
       cell: ({ row }) => (
         <Link href={`/products/${row.original.id}`} className="label text-faint transition hover:text-ink">
@@ -162,7 +166,7 @@ export function OrdersTable({ orders, status }: { orders: Order[]; status: strin
     },
     {
       id: "open",
-      header: "",
+      header: () => <span className="sr-only">Open</span>,
       enableSorting: false,
       cell: ({ row }) => (
         <Link href={`/orders/${row.original.id}`} className="label text-faint transition hover:text-ink">
@@ -215,7 +219,7 @@ export function ReviewsTable({ reviews }: { reviews: Review[] }) {
           <p className="line-clamp-2 text-xs text-faint">{row.original.body}</p>
           {row.original.reply && (
             <p className="mt-1 line-clamp-1 text-xs text-ok">
-              <span className="label">replied:</span> {row.original.reply}
+              <span className="label">Replied:</span> {row.original.reply}
             </p>
           )}
         </div>
@@ -254,7 +258,7 @@ export function ReviewsTable({ reviews }: { reviews: Review[] }) {
     },
     {
       id: "actions",
-      header: "",
+      header: () => <span className="sr-only">Actions</span>,
       enableSorting: false,
       cell: ({ row }) => <ReviewActions review={row.original} />,
     },
@@ -297,7 +301,7 @@ export function CategoriesTable({ categories }: { categories: Category[] }) {
     },
     {
       id: "actions",
-      header: "",
+      header: () => <span className="sr-only">Actions</span>,
       enableSorting: false,
       cell: ({ row }) => <CategoryActions category={row.original} />,
     },
@@ -357,7 +361,7 @@ export function CouponsTable({ coupons }: { coupons: Coupon[] }) {
     },
     {
       id: "actions",
-      header: "",
+      header: () => <span className="sr-only">Actions</span>,
       enableSorting: false,
       cell: ({ row }) => <CouponActions coupon={row.original} />,
     },
