@@ -36,11 +36,13 @@ export const NAV: NavEntry[] = [
   { href: "/", label: "Dashboard", icon: <Icon d="M3 12l9-9 9 9M5 10v10h5v-6h4v6h5V10" /> },
   { href: "/products", label: "Products", icon: <Icon d="M21 8l-9-5-9 5v8l9 5 9-5V8zM3 8l9 5 9-5M12 13v8" /> },
   { href: "/orders", label: "Orders", icon: <Icon d="M6 6h15l-1.5 9h-12zM6 6L5 3H2M9 20a1 1 0 100-2 1 1 0 000 2zM18 20a1 1 0 100-2 1 1 0 000 2z" /> },
+  { href: "/inventory", label: "Inventory", icon: <Icon d="M3 21V9l9-6 9 6v12M7 21v-8h10v8M7 17h10" /> },
   { href: "/customers", label: "Customers", icon: <Icon d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /> },
   { href: "/reviews", label: "Reviews", icon: <Icon d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z" /> },
   { href: "/categories", label: "Categories", icon: <Icon d="M4 4h7v7H4zM13 4h7v4h-7zM13 11h7v9h-7zM4 14h7v6H4z" /> },
   { href: "/coupons", label: "Coupons", icon: <Icon d="M3 9V7a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 000 6v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 000-6zM13 5v2M13 11v2M13 17v2" /> },
   { href: "/homepage", label: "Homepage", icon: <Icon d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z" /> },
+  { href: "/reports", label: "Reports", icon: <Icon d="M4 20V10M10 20V4M16 20v-7M3 20h18" /> },
   { href: "/settings", label: "Settings", icon: <Icon d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" /> },
 ]
 

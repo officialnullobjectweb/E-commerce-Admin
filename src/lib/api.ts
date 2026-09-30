@@ -9,6 +9,7 @@ import type {
   DayPoint,
   DashboardStats,
   HomeSection,
+  InventoryRow,
   NotificationItem,
   OptionAxis,
   Order,
@@ -17,6 +18,7 @@ import type {
   Review,
   SiteSettings,
   Subscriber,
+  TopProduct,
 } from "./types"
 
 /**
@@ -225,6 +227,74 @@ export async function getAlerts(): Promise<{
     }[],
     topProducts: [...sales.values()].sort((a, b) => b.revenue - a.revenue).slice(0, 5),
   }
+}
+
+export async function listInventory(): Promise<{ rows: InventoryRow[]; threshold: number }> {
+  const threshold = await lowStockThreshold()
+  const { data, error } = await service()
+    .from("variants")
+    .select("id,title,sku,inventory_qty,options,product_id,products(id,title)")
+    .order("inventory_qty")
+  if (error) throw new Error(error.message)
+  const rows = ((data ?? []) as unknown as {
+    id: string
+    title: string
+    sku: string
+    inventory_qty: number
+    options: Record<string, string> | null
+    product_id: string
+    products: { id: string; title: string } | null
+  }[]).map((v) => ({
+    id: v.id,
+    productId: v.product_id,
+    productTitle: v.products?.title ?? "—",
+    title: v.title,
+    sku: v.sku,
+    qty: Number(v.inventory_qty ?? 0),
+    options: v.options ?? {},
+    state: (v.inventory_qty === 0 ? "out" : v.inventory_qty < threshold ? "low" : "ok") as InventoryRow["state"],
+  }))
+  return { rows, threshold }
+}
+
+/** Top sellers for the reports page. ponytail: aggregates ≤2000 paid orders in JS — SQL view if scale hurts */
+export async function getTopProducts(
+  days = 30,
+  limit = 20,
+): Promise<{ products: TopProduct[]; revenue: number; orders: number }> {
+  const since = new Date(Date.now() - days * 86_400_000).toISOString()
+  const { data, error } = await service()
+    .from("orders")
+    .select("items")
+    .eq("status", "paid")
+    .gte("created_at", since)
+    .limit(2000)
+  if (error) throw new Error(error.message)
+  const agg = new Map<string, { units: number; revenue: number }>()
+  let revenue = 0
+  let orders = 0
+  for (const o of (data ?? []) as unknown as { items: Order["items"] | null }[]) {
+    orders++
+    for (const i of o.items ?? []) {
+      if (!i.title) continue
+      const a = agg.get(i.title) ?? { units: 0, revenue: 0 }
+      const line = (i.price ?? 0) * (i.qty ?? 1)
+      a.units += i.qty ?? 1
+      a.revenue += line
+      revenue += line
+      agg.set(i.title, a)
+    }
+  }
+  const products = [...agg.entries()]
+    .map(([title, a]) => ({
+      title,
+      units: a.units,
+      revenue: a.revenue,
+      share: revenue > 0 ? a.revenue / revenue : 0,
+    }))
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, limit)
+  return { products, revenue, orders }
 }
 
 const ORDER_COLS =

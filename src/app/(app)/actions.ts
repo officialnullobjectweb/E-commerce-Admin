@@ -556,7 +556,7 @@ export async function adjustStockAction(variantId: string, input: unknown): Prom
   if (v.data.delta === 0) return { ok: false, error: "Adjustment can't be 0" }
   try {
     await api.adjustStock(variantId, v.data.delta, v.data.reason)
-    invalidate(["/products", "/"])
+    invalidate(["/products", "/inventory", "/"])
     return { ok: true }
   } catch (e) {
     return fail(e)

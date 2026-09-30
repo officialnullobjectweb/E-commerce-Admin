@@ -187,6 +187,24 @@ export interface DayPoint {
   orders: number
 }
 
+export interface InventoryRow {
+  id: string
+  productId: string
+  productTitle: string
+  title: string
+  sku: string
+  qty: number
+  options: Record<string, string>
+  state: "out" | "low" | "ok"
+}
+
+export interface TopProduct {
+  title: string
+  units: number
+  revenue: number
+  share: number
+}
+
 export interface DashboardStats {
   products: number
   orders: number
