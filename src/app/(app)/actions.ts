@@ -562,3 +562,21 @@ export async function adjustStockAction(variantId: string, input: unknown): Prom
     return fail(e)
   }
 }
+
+export async function bulkAdjustAction(variantIds: string[], input: unknown): Promise<ActionResult> {
+  await requireAdmin()
+  if (!Array.isArray(variantIds) || variantIds.length === 0)
+    return { ok: false, error: "No variants selected" }
+  if (variantIds.length > 200) return { ok: false, error: "Bulk adjust caps at 200 variants" }
+  const v = parse(stockAdjustSchema, input)
+  if ("ok" in v) return v
+  if (v.data.delta === 0) return { ok: false, error: "Adjustment can't be 0" }
+  try {
+    // sequential: each adjustStock reads then writes qty — parallel would race on the same row set
+    for (const id of variantIds) await api.adjustStock(id, v.data.delta, v.data.reason)
+    invalidate(["/products", "/inventory", "/"])
+    return { ok: true, data: { count: variantIds.length } }
+  } catch (e) {
+    return fail(e)
+  }
+}

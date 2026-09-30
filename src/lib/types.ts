@@ -196,8 +196,19 @@ export interface InventoryRow {
   title: string
   sku: string
   qty: number
+  price: number
   options: Record<string, string>
   state: "out" | "low" | "ok"
+}
+
+export interface StockHistoryRow {
+  id: string
+  delta: number
+  reason: string
+  actor: string
+  createdAt: string
+  variantTitle: string
+  productTitle: string
 }
 
 export interface TopProduct {
@@ -218,6 +229,7 @@ export interface DashboardStats {
   states?: Record<string, number>
   methods?: Record<string, number>
   couponDiscountInr?: number
+  stockValueInr?: number
 }
 
 /* site_settings payloads (public read, service-role write) */

@@ -44,9 +44,9 @@ function Showcase() {
       </div>
 
       <div className="relative z-10 flex w-full max-w-sm flex-col items-center">
-        <p className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl" aria-label="Flowcase.">
+        <p className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
           {"Flowcase.".split("").map((ch, i) => (
-            <span key={i} className="login-letter inline-block" style={{ animationDelay: `${i * 45}ms` }} aria-hidden>
+            <span key={i} className="login-letter inline-block" style={{ animationDelay: `${i * 45}ms` }}>
               {ch}
             </span>
           ))}

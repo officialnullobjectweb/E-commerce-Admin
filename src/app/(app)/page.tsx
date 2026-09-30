@@ -45,6 +45,16 @@ function Card({
   )
 }
 
+function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div>
+      <p className="label text-faint">{label}</p>
+      <p className="font-display mt-1 text-xl font-bold tabular-nums">{value}</p>
+      {hint && <p className="mt-0.5 text-xs text-faint">{hint}</p>}
+    </div>
+  )
+}
+
 function Delta({ v }: { v: number | null }) {
   if (v === null) return <span className="text-xs text-faint">—</span>
   return (
@@ -104,6 +114,8 @@ export default async function DashboardPage() {
   const revPrev = daily.slice(-14, -7).reduce((s, d) => s + d.revenue, 0)
   const ord7 = daily.slice(-7).reduce((s, d) => s + d.orders, 0)
   const ordPrev = daily.slice(-14, -7).reduce((s, d) => s + d.orders, 0)
+  const rev30 = daily.slice(-30).reduce((s, d) => s + d.revenue, 0)
+  const ord30 = daily.slice(-30).reduce((s, d) => s + d.orders, 0)
 
   const stateRows = STAGES.filter((s) => (stats.states?.[s] ?? 0) > 0 || s === "new").map((s) => ({
     label: s,
@@ -140,6 +152,50 @@ export default async function DashboardPage() {
       </div>
 
       <DashboardChart data={daily} />
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-card border border-line bg-paper p-5">
+          <h2 className="font-display text-base font-bold">Business summary</h2>
+          <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">
+            <Stat label="Revenue · 7 days" value={inr.format(rev7)} />
+            <Stat label="Orders · 7 days" value={String(ord7)} />
+            <Stat
+              label="Avg order · 7 days"
+              value={inr.format(ord7 > 0 ? Math.round(rev7 / ord7) : 0)}
+            />
+            <Stat label="Revenue · 30 days" value={inr.format(rev30)} />
+            <Stat label="Orders · 30 days" value={String(ord30)} />
+            <Stat
+              label="Stock value"
+              value={inr.format(stats.stockValueInr ?? 0)}
+              hint="qty × price across variants"
+            />
+          </div>
+        </div>
+        <div className="rounded-card border border-line bg-paper p-5">
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 className="font-display text-base font-bold">Top products</h2>
+            <span className="label text-faint">by revenue</span>
+          </div>
+          {alerts.topProducts.length === 0 ? (
+            <p className="py-4 text-sm text-faint">No paid orders yet.</p>
+          ) : (
+            <ul className="divide-y divide-line">
+              {alerts.topProducts.map((p) => (
+                <li key={p.title} className="flex items-baseline justify-between gap-3 py-2.5 text-sm">
+                  <span className="min-w-0 truncate font-medium">{p.title}</span>
+                  <span className="shrink-0 tabular-nums text-faint">
+                    {p.qty} sold
+                    <span className="ml-2 text-ink">
+                      <MoneyDisplay amount={p.revenue} />
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-card border border-line bg-paper p-5">

@@ -17,6 +17,7 @@ import type {
   Product,
   Review,
   SiteSettings,
+  StockHistoryRow,
   Subscriber,
   TopProduct,
 } from "./types"
@@ -165,11 +166,12 @@ async function lowStockThreshold(): Promise<number> {
 export async function getStats(): Promise<DashboardStats> {
   const threshold = await lowStockThreshold()
   const sb = service()
-  const [{ data: orders, error: oe }, pc, rc, lc] = await Promise.all([
+  const [{ data: orders, error: oe }, pc, rc, lc, sv] = await Promise.all([
     sb.from("orders").select("total,status,state,payment_method,discount").limit(5000),
     sb.from("products").select("id", { count: "exact", head: true }),
     sb.from("reviews").select("id", { count: "exact", head: true }),
     sb.from("variants").select("id", { count: "exact", head: true }).lt("inventory_qty", threshold),
+    sb.from("variants").select("inventory_qty,price_inr"),
   ])
   if (oe) throw new Error(oe.message)
   const rows = (orders ?? []) as unknown as {
@@ -191,6 +193,10 @@ export async function getStats(): Promise<DashboardStats> {
     states: tally((o) => o.state || "new"),
     methods: tally((o) => o.payment_method || "razorpay"),
     couponDiscountInr: paid.reduce((s, o) => s + (o.discount || 0), 0),
+    stockValueInr: ((sv.data ?? []) as { inventory_qty: number; price_inr: number }[]).reduce(
+      (s, v) => s + (v.inventory_qty || 0) * (v.price_inr || 0),
+      0,
+    ),
   }
 }
 
@@ -237,7 +243,7 @@ export async function listInventory(): Promise<{ rows: InventoryRow[]; threshold
   const threshold = await lowStockThreshold()
   const { data, error } = await service()
     .from("variants")
-    .select("id,title,sku,inventory_qty,options,product_id,products(id,title)")
+    .select("id,title,sku,inventory_qty,price_inr,options,product_id,products(id,title)")
     .order("inventory_qty")
   if (error) throw new Error(error.message)
   const rows = ((data ?? []) as unknown as {
@@ -245,6 +251,7 @@ export async function listInventory(): Promise<{ rows: InventoryRow[]; threshold
     title: string
     sku: string
     inventory_qty: number
+    price_inr: number
     options: Record<string, string> | null
     product_id: string
     products: { id: string; title: string } | null
@@ -255,10 +262,36 @@ export async function listInventory(): Promise<{ rows: InventoryRow[]; threshold
     title: v.title,
     sku: v.sku,
     qty: Number(v.inventory_qty ?? 0),
+    price: Number(v.price_inr ?? 0),
     options: v.options ?? {},
     state: (v.inventory_qty === 0 ? "out" : v.inventory_qty < threshold ? "low" : "ok") as InventoryRow["state"],
   }))
   return { rows, threshold }
+}
+
+export async function listStockHistory(limit = 50): Promise<StockHistoryRow[]> {
+  const { data, error } = await service()
+    .from("stock_adjustments")
+    .select("id,delta,reason,actor,created_at,variants(title,products(title))")
+    .order("created_at", { ascending: false })
+    .limit(limit)
+  if (error) throw new Error(error.message)
+  return ((data ?? []) as unknown as {
+    id: string
+    delta: number
+    reason: string
+    actor: string
+    created_at: string
+    variants: { title: string; products: { title: string } | null } | null
+  }[]).map((a) => ({
+    id: a.id,
+    delta: a.delta,
+    reason: a.reason,
+    actor: a.actor,
+    createdAt: a.created_at,
+    variantTitle: a.variants?.title ?? "—",
+    productTitle: a.variants?.products?.title ?? "—",
+  }))
 }
 
 /** Top sellers for the reports page. ponytail: aggregates ≤2000 paid orders in JS — SQL view if scale hurts */

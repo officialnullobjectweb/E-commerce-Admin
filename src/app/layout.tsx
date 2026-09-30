@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Archivo } from "next/font/google"
+import { Clarity } from "@/components/Clarity"
 import "./globals.css"
 
 const archivo = Archivo({
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `(function(){try{var t=localStorage.getItem('fc-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
           }}
         />
+        <Clarity />
         {children}
       </body>
     </html>
