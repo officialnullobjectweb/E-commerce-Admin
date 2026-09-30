@@ -32,7 +32,7 @@ Rules:
 
 - **Display:** Archivo (`next/font`, var `--font-archivo`) — page titles, big numbers, wordmark, extra-bold tracking-tight.
 - **Body:** `system-ui` stack (the `--font-inter` var is wired as drop-in hook, Inter not loaded — zero network cost by design).
-- **Label style** (`.label` utility): mono (`ui-monospace`), 11px (`0.6875rem`), letter-spacing `0.08em` — field labels, table headers, meta rows.
+- **Label style** (`.label` utility): body sans, 12px (`0.75rem`), weight 500, sentence case — field labels, table headers, meta rows. Mono stays reserved for machine identifiers (IDs, SKUs, handles, section keys).
 - Scale: page title ~24/700 display · section 16/600 · body 14/400 · small 13.
 
 ## 4. Shape, elevation, motion
