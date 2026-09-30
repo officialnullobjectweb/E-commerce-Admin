@@ -19,10 +19,10 @@
   /* accent (primary actions + focus only) */
   --color-signal: #0700ff;
   --color-signal-ink: #ffffff;
-  /* status */
-  --color-ok: #15803d;
-  --color-warn: #b45309;
-  --color-bad: #b91c1c;
+  /* status (darkened for 4.5:1 on 10% tints at 11px) */
+  --color-ok: #166534;
+  --color-warn: #92400e;
+  --color-bad: #991b1b;
 
   /* radius */
   --radius-card: 1rem;

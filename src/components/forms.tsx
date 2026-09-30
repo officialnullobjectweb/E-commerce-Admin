@@ -96,7 +96,7 @@ export function Switch({
     <button
       type="button"
       role="switch"
-      aria-checked={checked}
+      aria-checked={!!checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
       className={cn(

@@ -6,14 +6,17 @@ Built with **Next.js 16 + TypeScript + Tailwind CSS 4 + Supabase**. It talks to 
 
 ## What it can do
 
-- **Dashboard** — revenue and orders at a glance with a revenue trend chart, plus quick links into every module.
-- **Products** — create, edit, and delete products. Variants (size/colour), collections, brands, categories, images, and stock in one place. Search on the list.
-- **Orders** — search, filter by status, change status, and view full order details (items, address, payment IDs).
-- **Customers** — every customer found from real orders, with total spend and order history.
-- **Reviews** — view store reviews, add them manually, and remove them.
-- **Categories** — manage the categories your storefront shows.
-- **Coupons** — percentage-off coupons, toggled on/off in one click.
-- **Settings** — store announcement bar and promotional banner, both live on the storefront.
+- **Dashboard** — revenue/orders/AOV with 7-day deltas, trend chart (7/30/90 days), fulfilment and payment breakdowns, low-stock and top-seller alerts, recent orders.
+- **Products** — create, edit, and delete products. Variants (size/colour), collections, brands, categories, images, stock, badges (%-off, Featured, Best Seller…), search and bulk actions on the list.
+- **Orders** — search, filter by status/state/method/date, full order details (items, address, payment IDs), status & notes editing, printable invoice, CSV export (from Reports).
+- **Inventory** — every variant in one table with low/out-of-stock filters, search, and stock adjustments (+/− with reason, audited into `stock_adjustments`).
+- **Customers** — every customer derived from real orders, with spend, order history, tags/notes editing, CSV export.
+- **Reviews** — moderation (pending/approved/hidden), reply to reviews, add manually for offline feedback.
+- **Categories** — manage storefront categories plus variation axes (option sets) reused across products.
+- **Coupons** — percentage, fixed, free-shipping, and BOGO codes with min subtotal, max discount, per-product/category/state targeting, usage limits, windows, and one-click enable.
+- **Homepage** — reorder, retitle, limit, and toggle storefront home sections (hero, best sellers, just landed, sustainability…) live.
+- **Reports** — 7/30/90-day revenue, orders, and AOV; 30-day top sellers with share bars; orders CSV export.
+- **Settings** — announcement bar, promo banner, ops thresholds (low stock), two-factor auth (TOTP + backup codes), archive browser (restore/purge), system health checks.
 
 ## Tech stack
 
@@ -72,10 +75,11 @@ Copy `.env.example` to `.env` and fill in:
 
 ## Security notes
 
-- Login is protected by a signed, time-limited cookie (`HMAC`, 12 hours).
-- Write operations go through server actions that re-check the session on every call.
+- Login is protected by a signed, time-limited cookie (`HMAC`, 12 hours, `HttpOnly` + `SameSite=Lax`).
+- Write operations go through server actions that re-check the session on every call (39 guarded actions; every page calls `requireAdmin`).
 - The service-role key and admin password live only in server environment variables.
-- Rate limiting on login attempts is enforced in the database.
+- Rate limiting on login attempts is enforced in the database; optional second factor (TOTP) with backup codes.
+- Security headers on every response (`nosniff`, `X-Frame-Options: DENY`, referrer/permissions policies).
 
 ## License
 

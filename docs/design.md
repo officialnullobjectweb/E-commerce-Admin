@@ -1,8 +1,8 @@
 # Flowcase Admin — Design System
 
 > This document is the single source of truth for how the admin looks and behaves.
-> Version: v1 skeleton — component reference and layout sections are completed in the
-> final polish phase (P14) once all modules land.
+> Version: v1 final — component reference and layout sections reflect the shipped
+> system after the P14 polish pass (a11y fixes, token contrast, all modules live).
 
 ## 1. Brand
 
@@ -22,7 +22,7 @@
 | `--color-faint` | `#52525b` | `#a1a1aa` | helper text, meta |
 | `--color-signal` | `#0700ff` | `#0700ff` | primary buttons, links, focus |
 | `--color-signal-ink` | `#ffffff` | `#ffffff` | text on signal |
-| `--color-ok` / `--color-warn` / `--color-bad` | `#15803d` / `#b45309` / `#b91c1c` | same | status text/badges |
+| `--color-ok` / `--color-warn` / `--color-bad` | `#166534` / `#92400e` / `#991b1b` | same | status text/badges |
 
 Rules:
 - Signal blue is **reserved** for primary actions and interactive focus — never decorative.
@@ -43,7 +43,7 @@ Rules:
 
 ## 5. Core components (inventory)
 
-Buttons (primary/secondary/ghost/destructive, sizes sm/md) · Inputs (text, number w/ ₹ prefix, select, textarea, checkbox, switch) · **FilterBar** (chips + clear-all, URL-synced) · **ListTable** (client columns, sort, pagination, row selection) · Cards · StatusBadge · EmptyState · Skeleton (+shine) · Modal/Dialog · Toast (sonner-style, top-right) · Tabs · Avatar · SearchInput · PriceInput · ActionMenu (⋯) · ConfirmDialog (destructive).
+Buttons (primary/secondary/ghost/destructive, sizes sm/md) · Inputs (text, number w/ ₹ prefix, select, textarea, checkbox, switch) · **FilterBar** (chips + clear-all, URL-synced) · **ListTable** (client columns, sort, pagination, row selection) · Cards · StatusBadge · EmptyState · Skeleton (+shine) · Modal/Dialog · Toast (bottom-center, stacking, hover-pause, `role="status"`) · Tabs · Avatar · SearchInput · PriceInput · ActionMenu (⋯) · ConfirmDialog (destructive).
 
 **States — every component must handle:** default, hover, focus-visible (2px signal ring), disabled, loading, empty, error, dark-mode.
 
