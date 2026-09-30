@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState, type ReactNode } from "react"
-import { ChevronDown, LogOut, MoonStar } from "lucide-react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
+import { ChevronDown, LogOut, MoonStar, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { cn } from "@/lib/cn"
 import { useTheme } from "@/components/theme"
 import { Avatar } from "@/components/display"
@@ -15,6 +15,30 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+
+/* ---------- sidebar preferences (persisted, shared with Settings) ---------- */
+
+export type SidebarMode = "hover" | "resize"
+export const SIDEBAR_EVENT = "fc-sidebar-change"
+const SB_MIN = 64
+const SB_COLLAPSE_AT = 140
+const SB_MAX = 420
+const SB_DEFAULT = 248
+
+function readSidebarPrefs() {
+  let mode: SidebarMode = "resize"
+  let w = SB_DEFAULT
+  let collapsed = false
+  try {
+    if (localStorage.getItem("fc-sidebar-mode") === "hover") mode = "hover"
+    const stored = Number(localStorage.getItem("fc-sidebar-w"))
+    if (Number.isFinite(stored) && stored >= SB_COLLAPSE_AT && stored <= SB_MAX) w = stored
+    collapsed = localStorage.getItem("fc-sidebar-collapsed") === "1"
+  } catch {
+    /* private mode */
+  }
+  return { mode, w, collapsed }
+}
 
 /* ---------- navigation definition (single source) ---------- */
 
@@ -108,22 +132,29 @@ export function ThemeToggle() {
 }
 
 /** Sidebar footer: account menu (theme + sign out) — Shopify-style. */
-export function AccountMenu() {
+export function AccountMenu({ compact = false }: { compact?: boolean }) {
   const { mode, toggle } = useTheme()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          aria-label="Account menu"
-          className="flex w-full items-center gap-3 rounded-control px-2 py-2 text-left transition hover:bg-wash focus:outline-none focus-visible:ring-2 focus-visible:ring-signal"
+          aria-label={compact ? "Account menu" : undefined}
+          className={cn(
+            "flex w-full items-center gap-3 rounded-control px-2 py-2 text-left transition hover:bg-wash focus:outline-none focus-visible:ring-2 focus-visible:ring-signal",
+            compact && "justify-center px-0"
+          )}
         >
           <Avatar name="Admin" size="sm" />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-medium">Administrator</span>
-            <span className="label block text-faint">Store admin</span>
-          </span>
-          <ChevronDown className="h-4 w-4 shrink-0 text-faint" />
+          {!compact && (
+            <>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium">Administrator</span>
+                <span className="label block text-faint">Store admin</span>
+              </span>
+              <ChevronDown className="h-4 w-4 shrink-0 text-faint" />
+            </>
+          )}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[236px]">
@@ -150,13 +181,15 @@ export function AccountMenu() {
   )
 }
 
-function NavList({ onNavigate }: { onNavigate?: () => void }) {
+function NavList({ onNavigate, rail = false }: { onNavigate?: () => void; rail?: boolean }) {
   const pathname = usePathname()
   return (
     <nav aria-label="Admin" className="flex flex-col">
       {NAV_GROUPS.map((group, gi) => (
         <div key={group.label ?? gi} className={gi > 0 ? "mt-5" : undefined}>
-          {group.label && <p className="label mb-1.5 px-3 text-faint">{group.label}</p>}
+          {group.label && (
+            <p className={cn("label mb-1.5 px-3 text-faint", rail && "sr-only")}>{group.label}</p>
+          )}
           <div className="flex flex-col gap-1">
             {group.items.map((item) => {
               const active =
@@ -167,13 +200,15 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   onClick={onNavigate}
+                  title={rail ? item.label : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-control px-3 py-2.5 text-sm font-medium transition",
+                    "flex min-w-0 items-center gap-3 rounded-control px-3 py-2.5 text-sm font-medium transition",
+                    rail && "justify-center px-0",
                     active ? "bg-ink text-paper" : "text-faint hover:bg-wash hover:text-ink"
                   )}
                 >
-                  {item.icon}
-                  {item.label}
+                  <span className="shrink-0">{item.icon}</span>
+                  <span className={cn("truncate", rail && "sr-only")}>{item.label}</span>
                 </Link>
               )
             })}
@@ -186,22 +221,166 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
-  return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[248px_1fr]">
-      {/* desktop sidebar */}
-      <aside className="hidden border-r border-line lg:flex lg:flex-col lg:p-5 print:hidden">
-        <Link href="/" className="font-display px-3 text-xl font-extrabold tracking-tight" aria-label="Flowcase admin home">
-          Flowcase.
+  const [mode, setMode] = useState<SidebarMode>("resize")
+  const [w, setW] = useState(SB_DEFAULT)
+  const [collapsed, setCollapsed] = useState(false)
+  const [hoverOpen, setHoverOpen] = useState(false)
+  const lastW = useRef(SB_DEFAULT)
+  const wRef = useRef(SB_DEFAULT)
+  const cRef = useRef(false)
+
+  useEffect(() => {
+    const apply = () => {
+      const p = readSidebarPrefs()
+      setMode(p.mode)
+      setW(p.w)
+      setCollapsed(p.collapsed)
+      lastW.current = p.w
+      wRef.current = p.w
+      cRef.current = p.collapsed
+    }
+    apply()
+    window.addEventListener(SIDEBAR_EVENT, apply)
+    return () => window.removeEventListener(SIDEBAR_EVENT, apply)
+  }, [])
+
+  const hoverMode = mode === "hover"
+  const railMode = hoverMode ? !hoverOpen : collapsed
+  const railW = railMode ? SB_MIN : hoverMode ? SB_DEFAULT : w
+  const colW = hoverMode ? SB_MIN : railW
+  const persist = (nextW: number, nextCollapsed: boolean) => {
+    try {
+      if (nextW >= SB_COLLAPSE_AT) localStorage.setItem("fc-sidebar-w", String(Math.round(nextW)))
+      localStorage.setItem("fc-sidebar-collapsed", nextCollapsed ? "1" : "0")
+    } catch {
+      /* ignore */
+    }
+  }
+  const applyWidth = (target: number) => {
+    if (target < SB_COLLAPSE_AT) {
+      setCollapsed(true)
+      cRef.current = true
+    } else {
+      setCollapsed(false)
+      cRef.current = false
+      setW(target)
+      wRef.current = target
+      lastW.current = target
+    }
+  }
+
+  const startDrag = (e: React.PointerEvent) => {
+    if (hoverMode) return
+    e.preventDefault()
+    const handle = e.currentTarget as HTMLElement
+    const startX = e.clientX
+    const startW = railW
+    handle.setPointerCapture(e.pointerId)
+    document.body.style.userSelect = "none"
+    const move = (ev: PointerEvent) => {
+      applyWidth(Math.min(SB_MAX, Math.max(SB_MIN, startW + ev.clientX - startX)))
+    }
+    const up = () => {
+      handle.removeEventListener("pointermove", move)
+      handle.removeEventListener("pointerup", up)
+      document.body.style.userSelect = ""
+      persist(lastW.current, cRef.current)
+    }
+    handle.addEventListener("pointermove", move)
+    handle.addEventListener("pointerup", up)
+  }
+
+  const toggleCollapsed = () => {
+    const next = !cRef.current
+    cRef.current = next
+    setCollapsed(next)
+    persist(lastW.current, next)
+  }
+
+  const sidebarBody = (isRail: boolean) => (
+    <>
+      <div className={cn("flex items-center justify-between gap-2 px-1", isRail && "flex-col gap-1.5 px-0")}>
+        <Link
+          href="/"
+          className="font-display min-w-0 truncate px-2 text-xl font-extrabold tracking-tight"
+          aria-label="Flowcase admin home"
+        >
+          {isRail ? "F." : "Flowcase."}
         </Link>
-        <p className="label mt-1 px-3 text-faint">Admin · Go with flow</p>
-        <div className="mt-6 flex-1">
-          <NavList />
-        </div>
-        <div className="border-t border-line pt-3">
-          <AccountMenu />
-        </div>
+        {!hoverMode && (
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-expanded={!collapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-control text-faint transition hover:bg-wash hover:text-ink"
+          >
+            {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          </button>
+        )}
+      </div>
+      <p className={cn("label mt-1 px-3 text-faint", isRail && "sr-only")}>Admin · Go with flow</p>
+      <div className="mt-6 min-h-0 flex-1">
+        <NavList rail={isRail} />
+      </div>
+      <div className="border-t border-line pt-3">
+        <AccountMenu compact={isRail} />
+      </div>
+    </>
+  )
+
+  return (
+    <div
+      className="app-shell relative lg:grid lg:h-dvh"
+      style={{ gridTemplateColumns: `${colW}px minmax(0, 1fr)` }}
+    >
+      {/* desktop sidebar */}
+      <aside
+        className={cn(
+          "app-side hidden border-r border-line lg:flex lg:h-dvh lg:flex-col lg:overflow-y-auto print:hidden",
+          railMode ? "lg:px-1.5 lg:py-5" : "lg:p-5",
+          hoverMode
+            ? "absolute left-0 top-0 z-40 bg-paper shadow-[8px_0_28px_-12px_rgba(0,0,0,0.25)] transition-[width] duration-200 ease-out"
+            : "relative"
+        )}
+        style={{ width: railW }}
+        onPointerEnter={() => hoverMode && setHoverOpen(true)}
+        onPointerLeave={() => {
+          if (!hoverMode) return
+          requestAnimationFrame(() => {
+            if (!document.querySelector(".app-side:hover")) setHoverOpen(false)
+          })
+        }}
+        onFocus={() => hoverMode && setHoverOpen(true)}
+        onBlur={(e) => {
+          if (!hoverMode) return
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHoverOpen(false)
+        }}
+      >
+        {sidebarBody(railMode)}
+        {!hoverMode && (
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize sidebar"
+            tabIndex={0}
+            title="Drag or use arrow keys to resize"
+            onPointerDown={startDrag}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+                e.preventDefault()
+                applyWidth(Math.min(SB_MAX, Math.max(SB_MIN, railW + (e.key === "ArrowRight" ? 16 : -16))))
+                persist(lastW.current, cRef.current)
+              }
+            }}
+            className="absolute right-0 top-0 hidden h-full w-2 cursor-col-resize lg:block"
+          >
+            <div className="mx-auto h-full w-px transition-colors hover:bg-signal" />
+          </div>
+        )}
       </aside>
-      <div className="min-w-0">
+      <div className="app-col min-w-0 lg:col-start-2 lg:h-dvh lg:overflow-y-auto">
         {/* mobile topbar */}
         <div className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-line bg-paper px-4 py-3 lg:hidden print:hidden">
           <Link href="/" className="font-display text-lg font-extrabold tracking-tight" aria-label="Flowcase admin home">

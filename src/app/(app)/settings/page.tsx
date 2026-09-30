@@ -3,6 +3,7 @@ import { AnnouncementForm } from "@/components/settings/AnnouncementForm"
 import { ArchiveSection } from "@/components/settings/ArchiveSection"
 import { HealthSection } from "@/components/settings/HealthSection"
 import { PromoForm } from "@/components/settings/PromoForm"
+import { SidebarSection } from "@/components/settings/SidebarSection"
 import { TwoFactorSection } from "@/components/settings/TwoFactorSection"
 import * as api from "@/lib/api"
 import { requireAdmin } from "@/lib/auth"
@@ -47,6 +48,13 @@ export default async function SettingsPage() {
         description="Require a rotating authenticator code at login."
       >
         <TwoFactorSection confirmed={totp.confirmed} />
+      </ContentSection>
+
+      <ContentSection
+        title="Sidebar"
+        description="How the desktop navigation behaves. Mobile uses the top-bar menu either way."
+      >
+        <SidebarSection />
       </ContentSection>
 
       <ContentSection

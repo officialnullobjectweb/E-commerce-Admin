@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/feedback"
-import { Field, Select, Textarea, TextInput } from "@/components/forms"
+import { Field, Textarea, TextInput } from "@/components/forms"
+import { SearchSelect } from "@/components/ui/search-select"
 import { createReviewAction } from "@/app/(app)/actions"
 import { reviewFormSchema, type ReviewFormValues } from "@/lib/schemas"
 
@@ -15,6 +16,8 @@ export function AddReview({ products }: { products: { id: string; title: string 
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ReviewFormValues>({
     resolver: zodResolver(reviewFormSchema),
@@ -38,26 +41,26 @@ export function AddReview({ products }: { products: { id: string; title: string 
     <form onSubmit={onSubmit} noValidate className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Field label="Product" htmlFor="r-product" required error={errors.product_id?.message}>
-          <Select id="r-product" {...register("product_id")}>
-            <option value="">Pick a product…</option>
-            {products.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title}
-              </option>
-            ))}
-          </Select>
+          <SearchSelect
+            id="r-product"
+            ariaLabel="Product"
+            placeholder="Pick a product…"
+            value={watch("product_id")}
+            onChange={(v) => setValue("product_id", v, { shouldDirty: true, shouldValidate: true })}
+            options={products.map((p) => ({ value: p.id, label: p.title }))}
+          />
         </Field>
         <Field label="Name" htmlFor="r-name" required error={errors.name?.message}>
           <TextInput id="r-name" {...register("name")} placeholder="Priya S." />
         </Field>
         <Field label="Rating" htmlFor="r-rating" error={errors.rating?.message}>
-          <Select id="r-rating" {...register("rating")}>
-            {[5, 4, 3, 2, 1].map((n) => (
-              <option key={n} value={n}>
-                {"★".repeat(n)} ({n})
-              </option>
-            ))}
-          </Select>
+          <SearchSelect
+            id="r-rating"
+            ariaLabel="Rating"
+            value={String(watch("rating"))}
+            onChange={(v) => setValue("rating", Number(v), { shouldDirty: true, shouldValidate: true })}
+            options={[5, 4, 3, 2, 1].map((n) => ({ value: String(n), label: `${"★".repeat(n)} (${n})` }))}
+          />
         </Field>
         <Field label="Headline" htmlFor="r-title" error={errors.title?.message}>
           <TextInput id="r-title" {...register("title")} placeholder="Perfect fit" />

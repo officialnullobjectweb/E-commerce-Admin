@@ -7,7 +7,8 @@ import { SlidersHorizontal } from "lucide-react"
 import type { ColumnDef } from "@tanstack/react-table"
 import { Badge, Modal } from "@/components/display"
 import { useToast } from "@/components/feedback"
-import { Field, NumberInput, Select } from "@/components/forms"
+import { Field, NumberInput } from "@/components/forms"
+import { SearchSelect } from "@/components/ui/search-select"
 import { DataTable } from "@/components/tables"
 import { adjustStockAction } from "@/app/(app)/actions"
 import type { InventoryRow } from "@/lib/types"
@@ -76,13 +77,13 @@ function StockAdjust({ row }: { row: InventoryRow }) {
               />
             </Field>
             <Field label="Reason" htmlFor="adj-reason" required>
-              <Select id="adj-reason" value={reason} onChange={(e) => setReason(e.target.value)}>
-                {REASONS.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </Select>
+              <SearchSelect
+                id="adj-reason"
+                ariaLabel="Reason"
+                value={reason}
+                onChange={setReason}
+                options={REASONS.map((r) => ({ value: r, label: r }))}
+              />
             </Field>
           </div>
           <div className="mt-5 flex justify-end gap-2">

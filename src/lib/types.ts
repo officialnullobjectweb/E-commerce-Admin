@@ -17,6 +17,8 @@ export interface Product {
   categoryHandle: string
   images: { id: string; url: string; position: number }[]
   variants: Variant[]
+  highlights: { term: string; detail: string }[]
+  featureBanners: { eyebrow: string; title: string; copy: string; image: string }[]
 }
 
 export interface Variant {

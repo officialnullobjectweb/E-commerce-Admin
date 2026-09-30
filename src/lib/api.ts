@@ -81,6 +81,8 @@ interface ProductRow {
   rating: number | null
   review_count: number | null
   category_id: string | null
+  highlights: { term: string; detail: string }[] | null
+  feature_banners: { eyebrow: string; title: string; copy: string; image: string }[] | null
   product_images: { url: string; position: number }[]
   variants: {
     id: string
@@ -110,6 +112,8 @@ function toProduct(r: ProductRow): Product {
     reviewCount: Number(r.review_count ?? 0),
     categoryHandle: "",
     categoryId: r.category_id ?? null,
+    highlights: r.highlights ?? [],
+    featureBanners: r.feature_banners ?? [],
     images: gallery.map((g, i) => ({ id: `${r.id}-img-${i}`, url: g.url, position: g.position })),
     variants: (r.variants ?? []).map((v) => ({
       id: v.id,
@@ -533,6 +537,8 @@ export interface ProductInput {
   colors: string[]
   badges: string
   category_id: string | null
+  highlights: { term: string; detail: string }[]
+  feature_banners: { eyebrow: string; title: string; copy: string; image: string }[]
 }
 
 export async function createProduct(input: ProductInput): Promise<string> {

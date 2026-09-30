@@ -27,6 +27,19 @@ export const productFormSchema = z.object({
   tagsText: z.string().max(300),
   colorsText: z.string().max(300),
   category_id: z.string().max(64),
+  features: z
+    .array(z.object({ term: z.string().trim().max(60), detail: z.string().trim().max(300) }))
+    .max(8, "Up to 8 features"),
+  featureBanners: z
+    .array(
+      z.object({
+        eyebrow: z.string().trim().max(60),
+        title: z.string().trim().max(120),
+        copy: z.string().trim().max(400),
+        image: z.string().trim().max(500),
+      })
+    )
+    .max(2, "Up to 2 feature banners"),
 })
 
 export type ProductFormValues = z.infer<typeof productFormSchema>
@@ -42,6 +55,8 @@ export function toProductInput(v: ProductFormValues): ProductInput {
     tags: splitList(v.tagsText),
     colors: splitList(v.colorsText),
     category_id: v.category_id || null,
+    highlights: v.features.filter((r) => r.term.trim() || r.detail.trim()),
+    feature_banners: v.featureBanners.filter((b) => b.title.trim() && b.image.trim()),
   }
 }
 

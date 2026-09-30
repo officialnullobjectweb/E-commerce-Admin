@@ -126,6 +126,15 @@ body {
   body {
     background: #fff !important;
   }
+  /* internal scroll containers must not clip printed pages */
+  .app-shell {
+    display: block !important;
+    height: auto !important;
+  }
+  .app-col {
+    height: auto !important;
+    overflow: visible !important;
+  }
   .invoice-sheet {
     background: #fff !important;
     color: #111 !important;

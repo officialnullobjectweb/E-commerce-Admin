@@ -1,7 +1,8 @@
 "use client"
 
-import type { FieldErrors, UseFormRegister, UseFormWatch } from "react-hook-form"
-import { Field, NumberInput, PriceInput, Select, Switch, Textarea, TextInput } from "@/components/forms"
+import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form"
+import { Field, NumberInput, PriceInput, Switch, Textarea, TextInput } from "@/components/forms"
+import { SearchSelect } from "@/components/ui/search-select"
 import type { CouponFormValues } from "@/lib/schemas"
 
 const TYPES: { value: CouponFormValues["type"]; label: string }[] = [
@@ -21,7 +22,7 @@ export function CouponFields({
   register: UseFormRegister<CouponFormValues>
   watch: UseFormWatch<CouponFormValues>
   errors: FieldErrors<CouponFormValues>
-  setValue: (name: "active", value: boolean) => void
+  setValue: UseFormSetValue<CouponFormValues>
   idPrefix?: string
 }) {
   const type = watch("type")
@@ -34,13 +35,13 @@ export function CouponFields({
           <TextInput id={`${idPrefix}code`} {...register("code")} placeholder="REUSE20" autoComplete="off" />
         </Field>
         <Field label="Type" htmlFor={`${idPrefix}type`} required error={errors.type?.message}>
-          <Select id={`${idPrefix}type`} {...register("type")}>
-            {TYPES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </Select>
+          <SearchSelect
+            id={`${idPrefix}type`}
+            ariaLabel="Type"
+            value={watch("type")}
+            onChange={(v) => setValue("type", v as CouponFormValues["type"], { shouldDirty: true, shouldValidate: true })}
+            options={TYPES}
+          />
         </Field>
         <Field label="Active" htmlFor={`${idPrefix}active`}>
           <Switch checked={watch("active")} onChange={(v) => setValue("active", v)} label="Coupon active" />
@@ -99,11 +100,17 @@ export function CouponFields({
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Field label="Applies to" htmlFor={`${idPrefix}scope`} error={errors.applies_to?.message}>
-          <Select id={`${idPrefix}scope`} {...register("applies_to")}>
-            <option value="all">Entire order</option>
-            <option value="products">Specific products</option>
-            <option value="categories">Specific categories</option>
-          </Select>
+          <SearchSelect
+            id={`${idPrefix}scope`}
+            ariaLabel="Applies to"
+            value={watch("applies_to")}
+            onChange={(v) => setValue("applies_to", v as CouponFormValues["applies_to"], { shouldDirty: true, shouldValidate: true })}
+            options={[
+              { value: "all", label: "Entire order" },
+              { value: "products", label: "Specific products" },
+              { value: "categories", label: "Specific categories" },
+            ]}
+          />
         </Field>
         <Field label="Allowed states" htmlFor={`${idPrefix}states`} error={errors.statesText?.message} hint="e.g. ka, mh, tn — blank = everywhere" className="sm:col-span-1 lg:col-span-3">
           <TextInput id={`${idPrefix}states`} {...register("statesText")} placeholder="ka, mh" />
